@@ -1,0 +1,59 @@
+/* General Body Style */
+body {
+  background-color: #f0f5e8; /* Light green background */
+  font-family: 'Helvetica'
+}
+
+/* Header */
+.shiny-dashboard .main-header {
+    background-color: brown !important; /* Green */
+    color: white !important;
+    font-family: 'Helvetica', serif !important; /* Custom font for header */
+}
+
+.main-header .logo {
+  background-color: #3d6228; /* Darker green for logo */
+}
+
+/* Sidebar */
+.main-sidebar {
+  background-color: #3d6228; /* Dark green sidebar */
+}
+
+.sidebar-menu > li > a {
+  color: white;
+  font-weight: bold;
+}
+
+.sidebar-menu > li > a:hover {
+  background-color: #679436; /* Highlight on hover */
+}
+
+/* Boxes */
+.box {
+  border-top: 3px solid #679436; /* Green accent on boxes */
+  border-radius: 10px;
+}
+
+/* Custom Tabs */
+.nav-tabs-custom {
+  background-color: #ffffff;
+  border: 1px solid #679436;
+  border-radius: 10px;
+}
+
+.nav-tabs-custom .nav-tabs > li.active > a {
+  background-color: #679436;
+  color: white;
+}
+
+/* Buttons */
+.btn {
+  background-color: #679436;
+  color: white;
+  border: none;
+}
+
+.btn:hover {
+  background-color: #3d6228;
+}
