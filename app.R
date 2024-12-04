@@ -8,7 +8,6 @@ mytheme <- create_theme(
     light_blue = "#144683"
   ),
   adminlte_sidebar(
-    width = "200px",
     dark_bg = "#67c64e",
     dark_hover_bg = "#4a9030",
     dark_color = "#253252"
@@ -22,8 +21,7 @@ mytheme <- create_theme(
 
 # Define UI
 ui <- dashboardPage(freshTheme = mytheme,
-  dashboardHeader(title = "StardewValley Item Profits"),
-  
+  dashboardHeader(title = "Stardew Item Profits", titleWidth = "40%"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("About", tabName = "about", icon = icon("info-circle")),
@@ -36,16 +34,15 @@ ui <- dashboardPage(freshTheme = mytheme,
   ),
   
   dashboardBody(
-    tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "styles.css") # Link to custom CSS
-    ),
+    includeCSS("www/styles.css"),
     tabItems(
       # About Tab
       tabItem(tabName = "about",
-              h2("Introduction"),
-              img(src = "https://cdn2.steamgriddb.com/logo_thumb/681a03489989b894eee8f630ae093be6.png", width = "100%"),
-              h2(""),
-              p("This dashboard provides insights into various aspects of farming, including crops, animals, minerals, and fishing.")
+            
+              img(src = "https://cdn2.steamgriddb.com/logo_thumb/681a03489989b894eee8f630ae093be6.png", height = "30%"),
+              h3("Welcome to the Stardew Valley Item Profits Visualizer!"),
+              h4("This dashboard provides insights into various aspects of farming, 
+                including crops, animals, minerals, and fishing for the well loved game Stardew Valley.")
       ),
       # Crops Tab
       tabItem(tabName = "crops",

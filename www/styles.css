@@ -1,59 +1,35 @@
-/* General Body Style */
-body {
-  background-color: #f0f5e8; /* Light green background */
-  font-family: 'Helvetica'
+@import url('https://fonts.googleapis.com/css2?family=Asap&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jersey%2010&display=swap');
+
+
+.irs--shiny .irs-bar, .irs--shiny .irs-single {
+  border: #b66c3f;
+  background: #f4d497;
 }
 
-/* Header */
-.shiny-dashboard .main-header {
-    background-color: brown !important; /* Green */
-    color: white !important;
-    font-family: 'Helvetica', serif !important; /* Custom font for header */
+body, h2 {
+  font-family: 'Asap', sans-serif;
 }
 
 .main-header .logo {
-  background-color: #3d6228; /* Darker green for logo */
+  font-family: 'Jersey 10', sans-serif;
+  font-size: 26px;
 }
 
-/* Sidebar */
-.main-sidebar {
-  background-color: #3d6228; /* Dark green sidebar */
+h3 {
+  font-family: 'Asap', sans-serif;
+  text-align: center; /* Horizontally center the text */
 }
 
-.sidebar-menu > li > a {
-  color: white;
-  font-weight: bold;
+h4 {
+  font-family: 'Asap', sans-serif;
+  text-align: center; /* Horizontally center the text */
+  font-size: 14px;
 }
 
-.sidebar-menu > li > a:hover {
-  background-color: #679436; /* Highlight on hover */
-}
-
-/* Boxes */
-.box {
-  border-top: 3px solid #679436; /* Green accent on boxes */
-  border-radius: 10px;
-}
-
-/* Custom Tabs */
-.nav-tabs-custom {
-  background-color: #ffffff;
-  border: 1px solid #679436;
-  border-radius: 10px;
-}
-
-.nav-tabs-custom .nav-tabs > li.active > a {
-  background-color: #679436;
-  color: white;
-}
-
-/* Buttons */
-.btn {
-  background-color: #679436;
-  color: white;
-  border: none;
-}
-
-.btn:hover {
-  background-color: #3d6228;
+/* Centering images */
+img {
+  display: block;      /* Make the image a block element */
+  margin-left: auto;   /* Auto left margin */
+  margin-right: auto;  /* Auto right margin */
 }
