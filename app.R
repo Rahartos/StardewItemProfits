@@ -2,7 +2,78 @@ library(shiny)
 library(shinydashboard)
 library(shinydashboardPlus)
 library(fresh)
+library(tidyverse)
+library(ggplot2)
 
+#load in the data
+
+#TEMP VARIABLES UNTIL WE GET THE DATA
+crops <- data.frame(
+  crop_name = c("Wheat", "Corn", "Tomato", "Lettuce", "Pumpkin", "Carrot", "Rice", "Soybean"),
+  season = c("Spring", "Summer", "Summer", "Spring", "Fall", "Spring", "Summer", "Fall"),
+  start_day = c(1, 1, 2, 2, 3, 4, 4, 5 ),       # Start day of each event
+  interval = c(3, 5, 2, 2, 3, 4, 5, 7)
+  )
+seasons <- c("Spring", "Summer", "Fall", "Winter")
+
+crops_select<-c("potato", "potatoes", "grapes")
+
+#graph functions
+# Function to create a calendar
+create_calendar <- function(events = NULL) {
+  days <- data.frame(
+    day = 1:28,
+    week = rep(1:4, each = 7),
+    weekday = factor(
+      rep(c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"), 4),
+      levels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    )
+  )
+  
+  if (!is.null(events)) {
+    event_days <- events |>
+      rowwise() |>
+      mutate(days = list(seq(from = start_day, to = 28, by = interval))) |>
+      unnest(cols = c(days)) |>
+      select(day = days, crop_name)
+    
+    event_days <- event_days |>
+      group_by(day) |>
+      summarize(event_name = paste(unique(crop_name), collapse = " & ")) |>
+      ungroup()
+    
+    days <- days |>
+      left_join(event_days, by = "day")
+  }
+  
+  ggplot(days, aes(x = weekday, y = -week, fill = event_name)) +
+    geom_tile(color = "black", size = 0.8) +
+    geom_text(aes(label = day), size = 5, vjust = -1) +
+    theme_minimal() +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.grid = element_blank(),
+      plot.title = element_text(size = 16, face = "bold")
+    ) +
+    scale_x_discrete(position = "top") +
+    labs(title = "Crop Growth Calendar", fill = "Crops")
+}
+
+# Example usage:
+# Define recurring events
+#events <- data.frame(
+#  start_day = c(1, 1, 1),       # Start day of each event
+#  interval = c(3, 5, 2),        # Recurrence interval (e.g., every 3 days, every 5 days, every 7 days)
+#  event_name = c("Peppers", "Greenbeans", "Grapes") # Event names
+#)
+
+# Plot the calendar
+#create_calendar(events)
+
+
+#use for ui customizations
 mytheme <- create_theme(
   adminlte_color(
     light_blue = "#144683"
@@ -14,14 +85,14 @@ mytheme <- create_theme(
   ),
   adminlte_global(
     content_bg = "#d0eeeb",
-    box_bg = "#e7763c", 
+    box_bg = "#d19b53", 
     info_box_bg = "#e7763c"
   )
 )
 
 # Define UI
 ui <- dashboardPage(freshTheme = mytheme,
-  dashboardHeader(title = "Stardew Item Profits", titleWidth = "40%"),
+  dashboardHeader(title = "SV Item Profits", titleWidth = "40%"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("About", tabName = "about", icon = icon("info-circle")),
@@ -48,8 +119,18 @@ ui <- dashboardPage(freshTheme = mytheme,
       tabItem(tabName = "crops",
               h2("Crops Overview"),
               fluidRow(
-                box(title = "Crop Growth Data", width = 6, plotOutput("cropPlot")),
-                box(title = "Crop Yield Table", width = 6, tableOutput("cropTable"))
+                column(width = 4,
+                  box(title = "Inputs", 
+                      width = NULL, 
+                      radioButtons("season", "Select the Season", seasons),
+                      checkboxGroupInput("crop", "Select Crops", crops_select)
+                    
+                ),
+                box(title = "Profits Table", width = NULL, plotOutput("cropTable"))),
+                box(title = "Crop Growth Data", width = 8, plotOutput("cropPlot")),
+                box(title = "Crop Growth Calendar", width = 8, plotOutput("cropCalendar"))
+                
+                
               )
       ),
       # Animals Tab
@@ -88,7 +169,32 @@ ui <- dashboardPage(freshTheme = mytheme,
 
 # Define Server
 server <- function(input, output, session) {
-  # Placeholder outputs
+  # Filter crops based on season and crop selection
+  updateRadioButtons(session, "season", selected = "Spring")
+  filtered_crops <- reactive({
+    crops %>%
+      filter(season %in% input$season)
+  })
+  
+  # Update crop options dynamically based on selected season
+  observe({
+    crop_options <- filtered_crops()$crop_name
+    updateCheckboxGroupInput(session, "crop", choices = crop_options, selected = crop_options)
+  })
+  
+  # Reactive for crop events based on selected crops
+  filtered_events <- reactive({
+    filtered_crops() %>%
+      filter(crop_name %in% (input$crop)) %>%
+      select(crop_name, start_day, interval)
+  })
+  
+  # Render the crop calendar
+  output$cropCalendar <- renderPlot({
+    create_calendar(events = filtered_events())
+  })
+  
+  # Other placeholders
   output$cropPlot <- renderPlot(plot(cars))
   output$cropTable <- renderTable(data.frame(Crop = c("Wheat", "Corn"), Yield = c(500, 450)))
   output$animalPlot <- renderPlot(plot(pressure))
@@ -99,6 +205,7 @@ server <- function(input, output, session) {
   output$fishTable <- renderTable(data.frame(Fish = c("Salmon", "Trout"), Weight = c(10, 8)))
   output$summary <- renderText("This is where your summary will go.")
 }
+
 
 # Run the app
 shinyApp(ui, server)
