@@ -1,0 +1,171 @@
+---
+title: "seeds"
+author: "Rain & Ziling"
+sidebar: false
+format:
+  html: default
+  pdf: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(rvest)
+library(polite)
+library(sf)
+library(maps)
+library(viridis)
+library(leaflet)
+library(htmltools)
+library(janitor)
+library(httr2)
+library(httr)
+library(lubridate)
+library(tidycensus)
+library(purrr)
+```
+
+
+```{r}
+seed <- bow("https://stardewvalleywiki.com/Potato_Seeds", force = TRUE)
+
+result <- scrape(seed) |>
+  html_nodes(css = "table") |>
+  html_table(header = TRUE, fill = TRUE)
+
+seeds <- result[[4]][2] #table of the seeds so we can use that list
+
+seeds <- seeds |>
+  mutate(Seed = strsplit(`Seeds, Starters, and Saplings`, " • ", fixed = TRUE)) |>
+  unnest(Seed) |>
+  mutate(Seed = str_replace_all(Seed, " ", "_")) |>
+  distinct(Seed) |>
+  filter(Seed != "Coffee_Beans")
+```
+
+```{r}
+get_growth <- function(page, css_selector) {
+  page |>
+  html_nodes(css_selector) |>
+  html_text()
+}
+
+# function for growth time
+seeddeets <- function(seed) {
+  url <- str_c("https://stardewvalleywiki.com/", seed)
+    page <- read_html(url)
+    growth_time <- get_growth(page, "tr:nth-child(6) #infoboxdetail")
+    general_store <- get_growth(page, "tr:nth-child(10) #infoboxdetail .no-wrap")
+    jojamart <- get_growth(page, "tr:nth-child(11) #infoboxdetail .no-wrap")
+    oasis <- get_growth(page, "tr:nth-child(12) #infoboxdetail , .no-wrap+ #infoboxdetail .no-wrap")
+    item <- seed
+    
+    seedinfo_tbl <- tibble(
+      item = item,
+      growth_time = parse_number(growth_time),
+      general_store = parse_number(general_store), 
+      jojamart = parse_number(jojamart),
+      #oasis = parse_number(oasis)
+    )
+}
+
+```
+
+```{r}
+class(seeds$Seed)
+
+seeds_list <- as.vector(seeds$Seed)
+
+
+class(seeds_list)
+details <- purrr::map(seeds_list, seeddeets)
+
+draft_seed <- bind_rows(details) |>
+  arrange(item)
+
+empty_indices <- which(sapply(details, function(tbl) nrow(tbl) == 0))
+
+seeds_needed <- seeds_list[empty_indices]
+```
+
+```{r}
+lmao <- seeddeets2("Apricot_Sapling")
+
+url <- "https://stardewvalleywiki.com/Apricot_Sapling"
+    page2 <- read_html(url)
+    growth_time2 <- get_growth(page2, "tr:nth-child(6) #infoboxdetail")
+    general_store2 <- get_growth(page2, "tr:nth-child(10) #infoboxdetail")
+    jojamart2 <- get_growth(page2, "tr:nth-child(11) #infoboxdetail")
+    item2 <- seed
+    
+    parse_number(str_extract(general_store2, "[0-9]+"))
+```
+
+
+```{r}
+# function for growth time
+seeddeets2 <- function(seed) {
+  url <- str_c("https://stardewvalleywiki.com/", seed)
+    page <- read_html(url)
+    growth_time <- get_growth(page, "tr:nth-child(6) #infoboxdetail")
+    general_store <- get_growth(page, "tr:nth-child(10) #infoboxdetail")
+    jojamart <- get_growth(page, "tr:nth-child(11) #infoboxdetail")
+    item <- seed
+    
+    seedinfo_tbl <- tibble(
+      item = item,
+      growth_time = parse_number(growth_time),
+      general_store = parse_number(str_extract(general_store, "[0-9]+")), 
+      jojamart = parse_number(jojamart)
+      )}
+
+details2 <- purrr::map(seeds_needed, seeddeets2)
+
+draft_seed2 <- bind_rows(details2) |>
+  arrange(item)
+
+empty_indices2 <- which(sapply(details2, function(tbl) nrow(tbl) == 0))
+
+seeds_needed2 <- seeds_needed[empty_indices2]
+```
+
+```{r}
+seed_details <- bind_rows(details, details2) |>
+  arrange(item)
+```
+
+```{r}
+seed_deets <- seed_details |>
+  mutate(item = str_replace(item, "_Seeds?", ""),
+         item = str_replace(item, "_Saplings?", ""),
+         item = str_replace(item, "_Bulb", ""),
+         item = str_replace(item, "_Starter", ""),
+         item = str_replace(item, "_Shoots", ""),
+         item = str_replace(item, "_Tuber", ""),
+         item = str_replace(item, "_Bean", "_Fruit"),
+         item = str_replace(item, "Cactus", "Cactus_Fruit"),
+         item = str_replace(item, "Fairy", "Fairy_Rose"),
+         item = str_replace(item, "Jazz", "Blue_Jazz"),
+         item = str_replace(item, "Tea", "Tea_Leaves"),
+         item = str_replace(item, "Taro", "Taro_Root"),
+         item = str_replace(item, "Spangle", "Summer_Spangle"),
+         item = str_replace(item, "Rare", "Sweet_Gem_Berry"),
+         item = str_replace(item, "Bean", "Green_Bean"),
+         item = str_replace(item, "Ancient", "Ancient_Fruit"),
+         item = str_replace(item, "Pepper", "Hot_Pepper"),
+         item = str_replace(item, "Rice_Shoot", "Unmilled_Rice"))
+
+oasis <- data.frame(
+    item = c("Cactus_Fruit", "Rhubarb", "Starfruit", "Beet"),
+    oasis_price = c(150, 100, 400, 20)
+  )
+
+seed_deets <- seed_deets|>
+  left_join(oasis)
+
+
+write.csv(seed_deets, "seed_deets.csv")
+```
+
