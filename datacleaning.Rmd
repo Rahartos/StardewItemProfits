@@ -40,7 +40,7 @@ crop_prices2 <- crop_prices |>
          oasis_price = replace_na(oasis_price, 0)) |>
   filter(!item %in% c("Qi_Fruit", "Tea_Leaves"))
 
-write.csv(crop_prices2, "crop_prices2.csv")
+write.csv(crop_prices2, "data/crop_prices2.csv")
 ```
 
 ```{r}
@@ -62,5 +62,22 @@ tablemaybe <- function(fish, prof, amount, grade) {
 tablemaybe("Albacore", "fisher", 4, "regular")
 
 grade = str_c("regular", "_price")
+```
+
+```{r}
+tablemaybe <- function(fish, prof, amount, grade) {
+  input <- str_c(grade, "_price") # Create the column name as a string
+  fish_prices |>
+    filter(item == fish & profession == prof) |>
+    mutate(profit = !!sym(input) * amount) |>
+    select(item, profession, profit)
+}
+
+# Example call
+tablemaybe("Albacore", "fisher", 4, "regular")
+```
+
+```{r}
+
 ```
 
