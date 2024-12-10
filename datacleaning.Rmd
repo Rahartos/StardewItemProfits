@@ -24,3 +24,30 @@ library(tidycensus)
 library(purrr)
 ```
 
+```{r}
+animal_product_prices <- read_csv("workflow/animal_product_prices.csv")
+crop_prices2 <- read_csv("workflow/crop_prices2.csv")
+fish_prices <- read_csv("workflow/fish_prices.csv")
+minerals_prices <- read_csv("workflow/minerals_prices.csv")
+```
+
+```{r}
+crops_prices2 <- crop_prices2 |>
+  select(-1, -2) |>
+  mutate(profession = replace_na(profession, "none"))
+
+animal_product_prices <- animal_product_prices |>
+  select(-1) |>
+  mutate(profession = replace_na(profession, "none"))
+
+write.csv(crop_prices2, "crop_prices2.csv")
+
+```
+
+```{r}
+fish_prices |>
+  filter(item == "Albacore") |>
+  mutate(albaprice = regular_price * 2,
+         total = albaprice)
+```
+
