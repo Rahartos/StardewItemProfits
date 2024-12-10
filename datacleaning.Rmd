@@ -1,0 +1,26 @@
+---
+title: "messing around"
+author: "Ziling"
+format:
+  pdf: default
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+library(tidyverse)
+library(stringr)
+library(rvest)
+library(polite)
+library(sf)
+library(maps)
+library(viridis)
+library(leaflet)
+library(htmltools)
+library(janitor)
+library(httr2)
+library(httr)
+library(lubridate)
+library(tidycensus)
+library(purrr)
+```
+
