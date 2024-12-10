@@ -6,6 +6,7 @@ library(tidyverse)
 library(ggplot2)
 
 #load in the data
+crop_prices2 <- read_csv("workflow/crop_prices2.csv")
 
 #TEMP VARIABLES UNTIL WE GET THE DATA
 crops <- data.frame(

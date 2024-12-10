@@ -24,13 +24,13 @@ stardew_items <- read_csv("stardew_items.csv")
 ```{r}
 
 crop_prices2|>
-  filter(sub_category == "Fall Crop")|>
+  filter(sub_category == "Fall Crop")|> #This will take a input season
+  mutate(item = fct_reorder(item, regular_price)) |> 
   pivot_longer(cols = regular_price:iridium_price, names_to = "quality", values_to = "sell_price")|>
   group_by(item)|>
   arrange(sell_price)|>
-  mutate(
-    quality = fct_reorder(quality, sell_price)) |> 
-  ggplot(aes(x = fct_reorder2(item, sell_price, quality), y = sell_price, fill = quality)) +
+  mutate(quality = fct_reorder(quality, sell_price)) |> 
+  ggplot(aes(x = item, y = sell_price, fill = quality)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_fill_manual(
     values = c("regular_price" = "darkgreen", "silver_price" = "grey", "gold_price" = "gold", "iridium_price" = "purple")
@@ -42,6 +42,35 @@ crop_prices2|>
     fill = "Quality")+
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+create_crop_barchart <-function(dataset = NULL){
+  dataset|>
+  mutate(item = fct_reorder(item, regular_price)) |> 
+  pivot_longer(cols = regular_price:iridium_price, names_to = "quality", values_to = "sell_price")|>
+  group_by(item)|>
+  arrange(sell_price)|>
+  mutate(quality = fct_reorder(quality, sell_price)) |> 
+  ggplot(aes(x = item, y = sell_price, fill = quality)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(
+    values = c("regular_price" = "darkgreen", "silver_price" = "grey", "gold_price" = "gold", "iridium_price" = "purple")
+  )+
+  labs(
+    title = "Grouped Bar Chart of Item Prices",
+    x = "Item Name",
+    y = "Sell Price",
+    fill = "Quality")+
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+
+crop_prices2|>
+  mutate(season = str_replace(sub_category, " Crop", ""))
+
+create_crop_barchart()
+
+
   
 ```
 
