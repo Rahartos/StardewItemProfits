@@ -1,0 +1,115 @@
+---
+title: "messing around"
+author: "Ziling"
+format:
+  pdf: default
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+library(tidyverse)
+library(stringr)
+library(rvest)
+library(polite)
+library(sf)
+library(maps)
+library(viridis)
+library(leaflet)
+library(htmltools)
+library(ggimage)
+library(purrr)
+library(raster)
+library(leaflet)
+```
+
+```{r}
+line_thick = 0.05
+width = 1224
+height = 742
+
+# Draw a rectangle that defines the shape of map
+map_int <- rbind(
+  c(0, 0),
+  c(0, height),
+  c(width, height),
+  c(width, 0),
+  c(0,0)
+  )
+
+# Draw a rectangle that defines the map exterior
+map_ext <- rbind(
+  c(0-line_thick, 0-line_thick),
+  c(0-line_thick, height + line_thick),
+  c(width + line_thick, height + line_thick),
+  c(width + line_thick, 0-line_thick),
+  c(0-line_thick, 0-line_thick)
+  )
+
+# Define a sfg polygon object in sf by subtracting interior from exterior
+map_shape <- st_polygon(list(map_ext, map_int))
+
+# Verify sfg class of polygon
+class(map_shape)
+
+
+# Load the image as a raster
+img <- brick("data/stardewmap.png")  # Replace with your image file path
+# Inspect the image dimensions
+print(img)
+# Extract bounds (xmin, xmax, ymin, ymax)
+bounds <- extent(img)
+print(bounds)
+# create image map df with center map pixel size
+df <- data.frame(
+  x = 612, 
+  y = 371, 
+  image = "data/stardewmap.png"  # Replace with your image path
+)
+
+# testing map
+ggplot() +
+  geom_sf(data = map_shape) +
+  geom_image(data = df, aes(x, y, image = image), size = 1.496)
+```
+
+```{r}
+# get data ready
+xy <- data.frame(
+    sub_category = c("The Beach", "River", "Night Market", "Ginger Island", "Mountain Lake", "Secret Woods", "Sewers", "Mutant Bug Lair", "Witch's Swamp", "Crab Pot", "Mines", "Cindersap Forest Pond", "Desert"),
+    x = c(850, 850, 800, 1150, 900, 200, 725, 725, 210, 400, 900, 300, 10),
+    y = c(120, 300, 100, 50, 550, 400, 260, 260, 305, 390, 610, 300, 710)
+  )
+
+fish_prices_sf <- fish_prices |>
+  left_join(xy) |>
+  filter(!is.na(x)) |>
+  mutate(x = ifelse(item == "Angler", 815, x),
+         y = ifelse(item == "Angler", 500, y),
+         x = ifelse(item == "Ms._Angler", 815, x),
+         y = ifelse(item == "Ms._Angler", 500, y),
+         x = ifelse(item == "Crimson", 805, x),
+         y = ifelse(item == "Crimson", 70, y),
+         x = ifelse(item == "Son_of_Crimsonfish", 805, x),
+         y = ifelse(item == "Son_of_Crimsonfish", 70, y),
+         ) |>  
+  st_as_sf(coords = c("x", "y"))
+
+write_csv(fish_prices_sf, "data/fish_prices_sf.csv")
+```
+
+```{r}
+# Plot the half-court with the image
+ggplot() +
+  geom_sf(data = half_court) +
+  geom_image(data = df, aes(x, y, image = image), size = 1.496) +
+  geom_sf(data = fish_prices_sf, color = "red", size = 4, alpha = .1) +
+  theme(
+    panel.background =element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank())
+```
+
