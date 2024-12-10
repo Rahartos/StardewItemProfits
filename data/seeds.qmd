@@ -142,7 +142,7 @@ seed_deets <- seed_details |>
          item = str_replace(item, "_Saplings?", ""),
          item = str_replace(item, "_Bulb", ""),
          item = str_replace(item, "_Starter", ""),
-         item = str_replace(item, "_Shoots", ""),
+         item = str_replace(item, "_Shoots?", ""),
          item = str_replace(item, "_Tuber", ""),
          item = str_replace(item, "_Bean", "_Fruit"),
          item = str_replace(item, "Cactus", "Cactus_Fruit"),
@@ -155,7 +155,7 @@ seed_deets <- seed_details |>
          item = str_replace(item, "Bean", "Green_Bean"),
          item = str_replace(item, "Ancient", "Ancient_Fruit"),
          item = str_replace(item, "Pepper", "Hot_Pepper"),
-         item = str_replace(item, "Rice_Shoot", "Unmilled_Rice"))
+         item = str_replace(item, "Rice", "Unmilled_Rice"))
 
 oasis <- data.frame(
     item = c("Cactus_Fruit", "Rhubarb", "Starfruit", "Beet"),

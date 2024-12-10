@@ -25,21 +25,22 @@ library(purrr)
 ```
 
 ```{r}
-animal_product_prices <- read_csv("workflow/animal_product_prices.csv")
-crop_prices2 <- read_csv("data/crop_prices2.csv")
-fish_prices <- read_csv("workflow/fish_prices.csv")
-minerals_prices <- read_csv("workflow/minerals_prices.csv")
 ```
 
 ```{r}
-crop_prices2 <- crop_prices2 |>
-  select(-1, -2) |>
+crop_prices2 <- crop_prices |>
+  left_join(seed_deets |>
+  select(-1)) |>
+  select(-1) |>
   mutate(profession = replace_na(profession, "none"),
-         seasnon = replace_na())
+         sub_category = replace_na(sub_category, "Special Crop"),
+         growth_time = replace_na(growth_time, 0),
+         general_store = replace_na(general_store, 0),
+         jojamart = replace_na(jojamart, 0),
+         oasis_price = replace_na(oasis_price, 0)) |>
+  filter(!item %in% c("Qi_Fruit", "Tea_Leaves"))
 
-
-
-
+write.csv(crop_prices2, "crop_prices2.csv")
 ```
 
 ```{r}
@@ -51,8 +52,15 @@ fish_prices |>
 ```
 
 ```{r}
-tablemaybe <- function(fish, profession, amount) {
-  
+tablemaybe <- function(fish, prof, amount, grade) {
+  input = str_c("grade", "_price")
+  fish_prices |>
+    filter(item == fish & profession == profession) |>
+    mutate(profit = input * 4)
 }
+
+tablemaybe("Albacore", "fisher", 4, "regular")
+
+grade = str_c("regular", "_price")
 ```
 
