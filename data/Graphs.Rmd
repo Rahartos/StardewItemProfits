@@ -18,7 +18,7 @@ library(ggplot2)
 animal_product_prices <- read_csv("animal_product_prices.csv")
 crop_prices2 <- read_csv("crop_prices2.csv")
 minerals_prices <- read_csv("minerals_prices.csv")
-stardew_items <- read_csv("stardew_items.csv")
+#stardew_items <- read_csv("stardew_items.csv")
 ```
 
 ```{r}
@@ -65,10 +65,15 @@ create_crop_barchart <-function(dataset = NULL){
 }
 
 
-crop_prices2|>
+cp2 <- crop_prices2|>
   mutate(season = str_replace(sub_category, " Crop", ""))
 
-create_crop_barchart()
+create_crop_barchart(cp2)
+
+cp2|>
+  filter((sub_category == "Special Crop"))
+
+
 
 
   

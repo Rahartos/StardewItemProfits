@@ -6,16 +6,14 @@ library(tidyverse)
 library(ggplot2)
 
 #load in the data
-crop_prices2 <- read_csv("workflow/crop_prices2.csv")
+crop_prices2 <- read_csv("data/crop_prices2.csv")
+
+crop_prices  <- crop_prices2|>
+  mutate(season = str_replace(sub_category, " Crop", ""))
 
 #TEMP VARIABLES UNTIL WE GET THE DATA
-crops <- data.frame(
-  crop_name = c("Wheat", "Corn", "Tomato", "Lettuce", "Pumpkin", "Carrot", "Rice", "Soybean"),
-  season = c("Spring", "Summer", "Summer", "Spring", "Fall", "Spring", "Summer", "Fall"),
-  start_day = c(1, 1, 2, 2, 3, 4, 4, 5 ),       # Start day of each event
-  interval = c(3, 5, 2, 2, 3, 4, 5, 7)
-  )
-seasons <- c("Spring", "Summer", "Fall", "Winter")
+
+seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
 
 crops_select<-c("potato", "potatoes", "grapes")
 
@@ -33,14 +31,15 @@ create_calendar <- function(events = NULL) {
   
   if (!is.null(events)) {
     event_days <- events |>
+      filter(growth_time != 0)|>
       rowwise() |>
-      mutate(days = list(seq(from = start_day, to = 28, by = interval))) |>
+      mutate(days = list(seq(from = 1, to = 28, by = growth_time))) |>
       unnest(cols = c(days)) |>
-      select(day = days, crop_name)
+      select(day = days, item)
     
     event_days <- event_days |>
       group_by(day) |>
-      summarize(event_name = paste(unique(crop_name), collapse = " & ")) |>
+      summarize(event_name = paste(unique(item), collapse = " & ")) |>
       ungroup()
     
     days <- days |>
@@ -60,6 +59,27 @@ create_calendar <- function(events = NULL) {
     ) +
     scale_x_discrete(position = "top") +
     labs(title = "Crop Growth Calendar", fill = "Crops")
+}
+
+create_crop_barchart <-function(dataset = NULL){
+  dataset|>
+    mutate(item = fct_reorder(item, regular_price)) |> 
+    pivot_longer(cols = regular_price:iridium_price, names_to = "quality", values_to = "sell_price")|>
+    group_by(item)|>
+    arrange(sell_price)|>
+    mutate(quality = fct_reorder(quality, sell_price)) |> 
+    ggplot(aes(x = item, y = sell_price, fill = quality)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    scale_fill_manual(
+      values = c("regular_price" = "darkgreen", "silver_price" = "grey", "gold_price" = "gold", "iridium_price" = "purple")
+    )+
+    labs(
+      title = "Grouped Bar Chart of Item Prices",
+      x = "Item Name",
+      y = "Sell Price",
+      fill = "Quality")+
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 }
 
 # Example usage:
@@ -170,34 +190,50 @@ ui <- dashboardPage(freshTheme = mytheme,
 
 # Define Server
 server <- function(input, output, session) {
-  # Filter crops based on season and crop selection
+  # Default selected season
   updateRadioButtons(session, "season", selected = "Spring")
+  
+  # Filter crops based on selected season
   filtered_crops <- reactive({
-    crops %>%
-      filter(season %in% input$season)
+    crop_prices %>%
+      filter(season == input$season)
   })
   
-  # Update crop options dynamically based on selected season
+  # Dynamically update crop selection based on season
   observe({
-    crop_options <- filtered_crops()$crop_name
+    crop_options <- filtered_crops()$item %>% unique()
     updateCheckboxGroupInput(session, "crop", choices = crop_options, selected = crop_options)
   })
   
-  # Reactive for crop events based on selected crops
+  # Filter events based on selected crops
   filtered_events <- reactive({
     filtered_crops() %>%
-      filter(crop_name %in% (input$crop)) %>%
-      select(crop_name, start_day, interval)
+      filter(item %in% input$crop)
   })
   
   # Render the crop calendar
   output$cropCalendar <- renderPlot({
+    validate(
+      need(nrow(filtered_events()) > 0, "No crops match the selected criteria!")
+    )
     create_calendar(events = filtered_events())
   })
   
-  # Other placeholders
-  output$cropPlot <- renderPlot(plot(cars))
-  output$cropTable <- renderTable(data.frame(Crop = c("Wheat", "Corn"), Yield = c(500, 450)))
+  # Render the crop plot
+  output$cropPlot <- renderPlot({
+    validate(
+      need(nrow(filtered_events()) > 0, "No crops match the selected criteria!")
+    )
+    create_crop_barchart(filtered_events())
+  })
+  
+  # Static placeholder for crop table
+  output$cropTable <- renderTable({
+    filtered_events() %>%
+      select(item, growth_time)  # Adjust column names as needed
+  })
+  
+  # Placeholder plots for other tabs
   output$animalPlot <- renderPlot(plot(pressure))
   output$animalTable <- renderTable(data.frame(Animal = c("Cows", "Sheep"), Count = c(50, 30)))
   output$mineralPlot <- renderPlot(plot(airquality$Temp, airquality$Solar.R))
@@ -206,6 +242,7 @@ server <- function(input, output, session) {
   output$fishTable <- renderTable(data.frame(Fish = c("Salmon", "Trout"), Weight = c(10, 8)))
   output$summary <- renderText("This is where your summary will go.")
 }
+
 
 
 # Run the app
