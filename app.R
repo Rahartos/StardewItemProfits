@@ -4,6 +4,7 @@ library(shinydashboardPlus)
 library(fresh)
 library(tidyverse)
 library(ggplot2)
+library(knitr)
 
 #load in the data
 crop_prices2 <- read_csv("data/crop_prices2.csv")
@@ -15,6 +16,7 @@ crop_prices  <- crop_prices2|>
 seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
 crops_select <-c("potato", "potatoes", "grapes")
 crops_professon <-c("none", "tiller")
+crops_quality <- c("regular_price", "silver_price", "gold_price", "iridium_price")
 
 
 
@@ -50,7 +52,7 @@ create_calendar <- function(events = NULL) {
       left_join(event_days, by = "day")
   }
   
-  ggplot(days, aes(x = weekday, y = -week, fill = event_name)) +
+  ggplot(days, aes(x = weekday, y = -week, fill = event_name)) + #Maybe put tiles in tiles?
     geom_tile(color = "black", size = 0.8) +
     geom_text(aes(label = day), size = 5, vjust = -1) +
     theme_minimal() +
@@ -110,7 +112,7 @@ mytheme <- create_theme(
   ),
   adminlte_global(
     content_bg = "#d0eeeb",
-    box_bg = "#d19b53", 
+    box_bg = "white", 
     info_box_bg = "#e7763c"
   )
 )
@@ -144,20 +146,29 @@ ui <- dashboardPage(freshTheme = mytheme,
       tabItem(tabName = "crops",
               h2("Crops Overview"),
               fluidRow(
-                column(width = 4,
-                  box(title = "Inputs", 
+                column(width = 5,
+                  box(title = "Inputs",
+                      collapsible = TRUE,
                       width = NULL, 
                       radioButtons("season", "Select the Season", seasons),
-                      radioButtons("crop_prof", "Select your Farmer's Professon", crops_professon),
+                      radioButtons("crop_prof", "Select your Farmer's Profession", crops_professon),
                       checkboxGroupInput("crop", "Select Crops", crops_select)
-                    
                 ),
-                box(title = "Profits Table", width = NULL, plotOutput("cropTable"))),
-                box(title = "Crop Growth Data", width = 8, plotOutput("cropPlot")),
-                box(title = "Crop Growth Calendar", width = 8, plotOutput("cropCalendar"))
-                
-                
-              )
+                box(title = "Crop Table",
+                    collapsible = TRUE,
+                    width = NULL, 
+                    selectInput("crops_qual", "Crop Quality", choices = list("Regular Quality" = 1, 
+                                                                            "Silver Quality" = 2, 
+                                                                            "Gold Quality" = 3,
+                                                                            "Iridium Quality" = 4),
+                                selected = 1),
+                    div(style = 'overflow-x: scroll', DT::dataTableOutput("cropTable")))
+                    
+ 
+                ),
+                box(title = "Crop Growth Data", width = 7, plotOutput("cropPlot")),
+                box(title = "Crop Growth Calendar", width = 7,  plotOutput("cropCalendar"))
+                )
       ),
       # Animals Tab
       tabItem(tabName = "animals",
@@ -201,6 +212,9 @@ server <- function(input, output, session) {
   updateRadioButtons(session, "season", selected = "Spring")
   # Default selected professon
   updateRadioButtons(session, "crop_prof", selected = "none")
+  #default quality?
+  updateSelectInput(session, "crops_qual", selected = "regular_price")
+
   
   # Filter crops based on selected season
   filtered_season <- reactive({
@@ -208,11 +222,12 @@ server <- function(input, output, session) {
       filter(season == input$season)
   })
   
+  #filter the profession based on user input
   filtered_crops <- reactive({
     filtered_season() |>
       filter(profession == input$crop_prof)
   })
-  
+
   # Dynamically update crop selection based on season
   observe({
     crop_options <- filtered_crops()$item %>% unique()
@@ -224,6 +239,25 @@ server <- function(input, output, session) {
     filtered_crops() %>%
       filter(item %in% input$crop)
   })
+  
+  #select the crop quality based on user input
+  filtered_prices <- reactive({
+    if(as.character(input$crops_qual) == "4"){
+      filtered_events()|>
+        select(item, iridium_price, growth_time )
+    }else if(as.character(input$crops_qual) == "2"){
+      filtered_events()|>
+        select(item, silver_price, growth_time )
+    }else if(as.character(input$crops_qual) == "3"){
+      filtered_events()|>
+        select(item, gold_price, growth_time )
+    }else{
+      filtered_events()|>
+        select(item, regular_price, growth_time)
+      }
+  })
+  
+  
   
   # Render the crop calendar
   output$cropCalendar <- renderPlot({
@@ -241,10 +275,10 @@ server <- function(input, output, session) {
     create_crop_barchart(filtered_events())
   })
   
-  # Static placeholder for crop table
-  output$cropTable <- renderTable({
-    data.frame(Crop = c("Wheat", "Corn"), Yield = c(500, 450))
-  })
+  # crop table
+  output$cropTable<- DT::renderDataTable({DT::datatable(filtered_prices())})
+   
+  
   
   # Placeholder plots for other tabs
   output$animalPlot <- renderPlot(plot(pressure))
