@@ -7,15 +7,16 @@ library(ggplot2)
 
 #load in the data
 crop_prices2 <- read_csv("data/crop_prices2.csv")
-
 crop_prices  <- crop_prices2|>
   mutate(season = str_replace(sub_category, " Crop", ""))
 
-#TEMP VARIABLES UNTIL WE GET THE DATA
 
+#Global variables for the crop tab
 seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
+crops_select <-c("potato", "potatoes", "grapes")
+crops_professon <-c("none", "tiller")
 
-crops_select<-c("potato", "potatoes", "grapes")
+
 
 #graph functions
 # Function to create a calendar
@@ -33,11 +34,14 @@ create_calendar <- function(events = NULL) {
     event_days <- events |>
       filter(growth_time != 0)|>
       rowwise() |>
-      mutate(days = list(seq(from = 1, to = 28, by = growth_time))) |>
+      mutate(days = ifelse(growth_time == 28,
+                           list(seq(from = 1, to = 1, by = 1)),
+                           list(seq(from = 28, to = 1, by = -growth_time)))) |>
       unnest(cols = c(days)) |>
       select(day = days, item)
     
     event_days <- event_days |>
+      filter(day != 28) |> #remove the last day because you cannot plant on the last day of the season
       group_by(day) |>
       summarize(event_name = paste(unique(item), collapse = " & ")) |>
       ungroup()
@@ -144,6 +148,7 @@ ui <- dashboardPage(freshTheme = mytheme,
                   box(title = "Inputs", 
                       width = NULL, 
                       radioButtons("season", "Select the Season", seasons),
+                      radioButtons("crop_prof", "Select your Farmer's Professon", crops_professon),
                       checkboxGroupInput("crop", "Select Crops", crops_select)
                     
                 ),
@@ -181,7 +186,7 @@ ui <- dashboardPage(freshTheme = mytheme,
       # Conclusions Tab
       tabItem(tabName = "conclusions",
               h2("Conclusions"),
-              p("Summarize your farming game's data and insights here."),
+              p("Grow things, plant things, make money."),
               textOutput("summary")
       )
     )
@@ -190,13 +195,22 @@ ui <- dashboardPage(freshTheme = mytheme,
 
 # Define Server
 server <- function(input, output, session) {
+
+  #ALL THE OUTPUTS FOR THE CROPS TAB
   # Default selected season
   updateRadioButtons(session, "season", selected = "Spring")
+  # Default selected professon
+  updateRadioButtons(session, "crop_prof", selected = "none")
   
   # Filter crops based on selected season
-  filtered_crops <- reactive({
-    crop_prices %>%
+  filtered_season <- reactive({
+    crop_prices |>
       filter(season == input$season)
+  })
+  
+  filtered_crops <- reactive({
+    filtered_season() |>
+      filter(profession == input$crop_prof)
   })
   
   # Dynamically update crop selection based on season
@@ -229,8 +243,7 @@ server <- function(input, output, session) {
   
   # Static placeholder for crop table
   output$cropTable <- renderTable({
-    filtered_events() %>%
-      select(item, growth_time)  # Adjust column names as needed
+    data.frame(Crop = c("Wheat", "Corn"), Yield = c(500, 450))
   })
   
   # Placeholder plots for other tabs
