@@ -101,7 +101,9 @@ fish_prices_sf <- fish_prices |>
          ) |>  
   st_as_sf(coords = c("x", "y"))
 
-write_csv(fish_prices_sf, "data/fish_prices_sf.csv")
+# save shapefile
+saveRDS(fish_prices_sf, "data/fish_prices_sf.rds")
+fish_prices_sf <- readRDS("data/fish_prices_sf.rds")
 ```
 
 ```{r}
