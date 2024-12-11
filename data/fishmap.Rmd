@@ -76,7 +76,7 @@ ggplot() +
 # get data ready
 xy <- data.frame(
     sub_category = c("The Beach", "River", "Night Market", "Ginger Island", "Mountain Lake", "Secret Woods", "Sewers", "Mutant Bug Lair", "Witch's Swamp", "Crab Pot", "Mines", "Cindersap Forest Pond", "Desert"),
-    x = c(850, 850, 800, 1150, 900, 200, 725, 725, 210, 400, 900, 300, 10),
+    x = c(850, 850, 800, 1150, 900, 200, 725, 725, 210, 400, 900, 300, 20),
     y = c(120, 300, 100, 50, 550, 400, 260, 260, 305, 390, 610, 300, 710)
   )
 
@@ -100,11 +100,11 @@ write_csv(fish_prices_sf, "data/fish_prices_sf.csv")
 ```{r}
 # Plot the half-court with the image
 ggplot() +
-  geom_sf(data = half_court) +
+  geom_sf(data = map_shape) +
   geom_image(data = df, aes(x, y, image = image), size = 1.496) +
   geom_sf(data = fish_prices_sf, color = "red", size = 4, alpha = .1) +
   theme(
-    panel.background =element_blank(),
+    panel.background = element_blank(),
     axis.title.x = element_blank(),
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
