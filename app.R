@@ -5,6 +5,8 @@ library(fresh)
 library(tidyverse)
 library(ggplot2)
 library(knitr)
+library(DT)
+library(plotly)
 
 #load in the data
 crop_prices2 <- read_csv("data/crop_prices2.csv")
@@ -45,14 +47,14 @@ create_calendar <- function(events = NULL) {
     event_days <- event_days |>
       filter(day != 28) |> #remove the last day because you cannot plant on the last day of the season
       group_by(day) |>
-      summarize(event_name = paste(unique(item), collapse = " & ")) |>
+      summarize(plant_crops = paste(unique(item), collapse = " & ")) |>
       ungroup()
     
     days <- days |>
       left_join(event_days, by = "day")
   }
   
-  ggplot(days, aes(x = weekday, y = -week, fill = event_name)) + #Maybe put tiles in tiles?
+  cal <- ggplot(days, aes(x = weekday, y = -week, fill = plant_crops)) + #Maybe put tiles in tiles?
     geom_tile(color = "black", size = 0.8) +
     geom_text(aes(label = day), size = 5, vjust = -1) +
     theme_minimal() +
@@ -61,14 +63,18 @@ create_calendar <- function(events = NULL) {
       axis.ticks = element_blank(),
       axis.title = element_blank(),
       panel.grid = element_blank(),
-      plot.title = element_text(size = 16, face = "bold")
+      plot.title = element_text(size = 16, face = "bold"),
+      legend.position = "none"
     ) +
     scale_x_discrete(position = "top") +
     labs(title = "Crop Growth Calendar", fill = "Crops")
+  
+  fig <- ggplotly(cal, tooltip = "fill")
+  fig
 }
 
 create_crop_barchart <-function(dataset = NULL){
-  dataset|>
+  plot <- dataset|>
     mutate(item = fct_reorder(item, regular_price)) |> 
     pivot_longer(cols = regular_price:iridium_price, names_to = "quality", values_to = "sell_price")|>
     group_by(item)|>
@@ -77,7 +83,16 @@ create_crop_barchart <-function(dataset = NULL){
     ggplot(aes(x = item, y = sell_price, fill = quality)) +
     geom_bar(stat = "identity", position = "dodge") +
     scale_fill_manual(
-      values = c("regular_price" = "darkgreen", "silver_price" = "grey", "gold_price" = "gold", "iridium_price" = "purple")
+      labels = c(
+        "regular_price" = "Regular",
+        "silver_price" = "Silver",
+        "gold_price" = "Gold",
+        "iridium_price" = "Iridium"
+      ),
+      values = c("regular_price" = "darkgreen", 
+                 "silver_price" = "grey", 
+                 "gold_price" = "gold", 
+                 "iridium_price" = "purple"),
     )+
     labs(
       title = "Grouped Bar Chart of Item Prices",
@@ -86,6 +101,7 @@ create_crop_barchart <-function(dataset = NULL){
       fill = "Quality")+
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  ggplotly(plot)
 }
 
 # Example usage:
@@ -93,7 +109,7 @@ create_crop_barchart <-function(dataset = NULL){
 #events <- data.frame(
 #  start_day = c(1, 1, 1),       # Start day of each event
 #  interval = c(3, 5, 2),        # Recurrence interval (e.g., every 3 days, every 5 days, every 7 days)
-#  event_name = c("Peppers", "Greenbeans", "Grapes") # Event names
+#  plant_crops = c("Peppers", "Greenbeans", "Grapes") # Event names
 #)
 
 # Plot the calendar
@@ -166,8 +182,8 @@ ui <- dashboardPage(freshTheme = mytheme,
                     
  
                 ),
-                box(title = "Crop Growth Data", width = 7, plotOutput("cropPlot")),
-                box(title = "Crop Growth Calendar", width = 7,  plotOutput("cropCalendar"))
+                box(title = "Crop Growth Data", width = 7, plotlyOutput("cropPlot")),
+                box(title = "Crop Growth Calendar", width = 7,  plotlyOutput("cropCalendar"))
                 )
       ),
       # Animals Tab
@@ -260,7 +276,7 @@ server <- function(input, output, session) {
   
   
   # Render the crop calendar
-  output$cropCalendar <- renderPlot({
+  output$cropCalendar <- renderPlotly({
     validate(
       need(nrow(filtered_events()) > 0, "No crops match the selected criteria!")
     )
@@ -268,7 +284,7 @@ server <- function(input, output, session) {
   })
   
   # Render the crop plot
-  output$cropPlot <- renderPlot({
+  output$cropPlot <- renderPlotly({
     validate(
       need(nrow(filtered_events()) > 0, "No crops match the selected criteria!")
     )
@@ -277,9 +293,7 @@ server <- function(input, output, session) {
   
   # crop table
   output$cropTable<- DT::renderDataTable({DT::datatable(filtered_prices())})
-   
-  
-  
+
   # Placeholder plots for other tabs
   output$animalPlot <- renderPlot(plot(pressure))
   output$animalTable <- renderTable(data.frame(Animal = c("Cows", "Sheep"), Count = c(50, 30)))
