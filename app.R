@@ -7,18 +7,34 @@ library(ggplot2)
 library(knitr)
 library(DT)
 library(plotly)
+library(sf)
+library(maps)
+library(ggimage)
+library(purrr)
+library(raster)
+
+
 
 #load in the data
 crop_prices2 <- read_csv("data/crop_prices2.csv")
 crop_prices  <- crop_prices2|>
   mutate(season = str_replace(sub_category, " Crop", ""))
 
+fish_prices <- read_csv("data/fish_prices_sf.csv")
 
 #Global variables for the crop tab
 seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
 crops_select <-c("potato", "potatoes", "grapes")
 crops_professon <-c("none", "tiller")
 crops_quality <- c("regular_price", "silver_price", "gold_price", "iridium_price")
+
+#Global variables for the fish tab
+fish_locations <- c("The Beach", "River", "Night Market", 
+                    "Ginger Island", "Mountain Lake","Secret Woods",
+                    "Sewers", "Mutant Bug Lair", "Witch's Swamp",
+                    "Crab Pot", "Mines", "Cindersap Forest Pond", "Desert")
+fish_select <-c("fishy1", "fishy2", "fishy3")
+fish_professon <-c("none", "angler")
 
 
 
@@ -42,7 +58,7 @@ create_calendar <- function(events = NULL) {
                            list(seq(from = 1, to = 1, by = 1)),
                            list(seq(from = 28, to = 1, by = -growth_time)))) |>
       unnest(cols = c(days)) |>
-      select(day = days, item)
+      dplyr::select(day = days, item)
     
     event_days <- event_days |>
       filter(day != 28) |> #remove the last day because you cannot plant on the last day of the season
@@ -206,8 +222,28 @@ ui <- dashboardPage(freshTheme = mytheme,
       tabItem(tabName = "fish",
               h2("Fishing Overview"),
               fluidRow(
-                box(title = "Fish Species", width = 6, plotOutput("fishPlot")),
-                box(title = "Catch Records", width = 6, tableOutput("fishTable"))
+                column(width = 5,
+                       box(title = "Inputs",
+                           collapsible = TRUE,
+                           width = NULL, 
+                             radioButtons("f_location", "Select Fish Location", fish_locations),
+                             radioButtons("f_prof", "Select your Farmer's Profession", fish_professon),
+                             checkboxGroupInput("fish_choice", "Select Fishes", fish_select)
+                         ),
+                         box(title = "Fish Table",
+                             collapsible = TRUE,
+                             width = NULL, 
+                             selectInput("fish_qual", "Fish Quality", choices = list("Regular Quality" = 1, 
+                                                                                      "Silver Quality" = 2, 
+                                                                                      "Gold Quality" = 3,
+                                                                                      "Iridium Quality" = 4),
+                                         selected = 1),
+                             div(style = 'overflow-x: scroll', DT::dataTableOutput("fishTable")))
+                         
+                         
+                  ),
+                  box(title = "Fish Map Location", width = 7, plotlyOutput("fishMap"))
+
               )
       ),
       # Conclusions Tab
@@ -260,16 +296,16 @@ server <- function(input, output, session) {
   filtered_prices <- reactive({
     if(as.character(input$crops_qual) == "4"){
       filtered_events()|>
-        select(item, iridium_price, growth_time )
+        dplyr::select(item, iridium_price, growth_time )
     }else if(as.character(input$crops_qual) == "2"){
       filtered_events()|>
-        select(item, silver_price, growth_time )
+        dplyr::select(item, silver_price, growth_time )
     }else if(as.character(input$crops_qual) == "3"){
       filtered_events()|>
-        select(item, gold_price, growth_time )
+        dplyr::select(item, gold_price, growth_time )
     }else{
       filtered_events()|>
-        select(item, regular_price, growth_time)
+        dplyr::select(item, regular_price, growth_time)
       }
   })
   
@@ -293,14 +329,82 @@ server <- function(input, output, session) {
   
   # crop table
   output$cropTable<- DT::renderDataTable({DT::datatable(filtered_prices())})
+  
+  
+#Fish Outputs
+  updateRadioButtons(session, "f_location", selected = "River")
+  # Default selected professon
+  updateRadioButtons(session, "f_prof", selected = "none")
+  #default quality?
+  updateSelectInput(session, "fish_qual", selected = "regular_price")
+  
+  
+  # Filter crops based on selected season
+  filtered_location <- reactive({
+    fish_prices |>
+      filter(sub_category == input$f_location)
+  })
+  
+  #filter the profession based on user input
+  filtered_fish_prof <- reactive({
+    filtered_location() |>
+      filter(profession == input$f_prof)
+  })
+  
+  # Dynamically update crop selection based on season
+  observe({
+    fish_options <- filtered_fish_prof()$item %>% unique()
+    updateCheckboxGroupInput(session, "fish_choice", choices = fish_options, selected = fish_options)
+  })
+  
+  # Filter events based on selected crops
+  filtered_selected_fishes <- reactive({
+    filtered_fish_prof() %>%
+      filter(item %in% input$fish_choice)
+  })
+  
+  #select the crop quality based on user input
+  filtered_fish_prices <- reactive({
+    if(as.character(input$fish_qual) == "4"){
+      filtered_selected_fishes()|>
+        dplyr::select(item, iridium_price, sub_category)
+    }else if(as.character(input$fish_qual) == "2"){
+      filtered_selected_fishes()|>
+        dplyr::select(item, silver_price, sub_category )
+    }else if(as.character(input$crops_qual) == "3"){
+      filtered_selected_fishes()|>
+        dplyr::select(item, gold_price, sub_category)
+    }else{
+      filtered_selected_fishes()|>
+        dplyr::select(item, regular_price, sub_category)
+    }
+  })
+  
+  
+  
+  # Render the crop calendar
+  output$fishMap <- renderPlotly({
+    validate(
+      need(nrow(filtered_events()) > 0, "No crops match the selected criteria!")
+    )
+  })
+  
+  # Render the crop plot
+  output$cropPlot <- renderPlotly({
+    validate(
+      need(nrow(filtered_events()) > 0, "No crops match the selected criteria!")
+    )
+    create_crop_barchart(filtered_events())
+  })
+  
+  # crop table
+  output$fishTable<- DT::renderDataTable({DT::datatable(filtered_fish_prices())})
 
   # Placeholder plots for other tabs
   output$animalPlot <- renderPlot(plot(pressure))
   output$animalTable <- renderTable(data.frame(Animal = c("Cows", "Sheep"), Count = c(50, 30)))
   output$mineralPlot <- renderPlot(plot(airquality$Temp, airquality$Solar.R))
   output$mineralTable <- renderTable(data.frame(Mineral = c("Gold", "Silver"), Quantity = c(20, 50)))
-  output$fishPlot <- renderPlot(hist(rnorm(100)))
-  output$fishTable <- renderTable(data.frame(Fish = c("Salmon", "Trout"), Weight = c(10, 8)))
   output$summary <- renderText("This is where your summary will go.")
 }
 
