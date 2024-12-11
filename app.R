@@ -20,7 +20,7 @@ crop_prices2 <- read_csv("data/crop_prices2.csv")
 crop_prices  <- crop_prices2|>
   mutate(season = str_replace(sub_category, " Crop", ""))
 
-fish_prices <- read_csv("data/fish_prices_sf.csv")
+fish_prices <- readRDS("data/fish_prices_sf.rds")
 
 #Global variables for the crop tab
 seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
@@ -35,6 +35,8 @@ fish_locations <- c("The Beach", "River", "Night Market",
                     "Crab Pot", "Mines", "Cindersap Forest Pond", "Desert")
 fish_select <-c("fishy1", "fishy2", "fishy3")
 fish_professon <-c("none", "angler")
+map_shape <- readRDS("data/map_shape.rds")
+stardewmap_df <-read_csv("data/stardewmap_df.csv")
 
 
 
@@ -118,6 +120,21 @@ create_crop_barchart <-function(dataset = NULL){
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
   ggplotly(plot)
+}
+
+create_fish_map <- function(dataset = NULL){
+  ggplot() +
+    geom_sf(data = map_shape) +
+    geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496) +
+    geom_sf(data = dataset, color = "red", size = 4) +
+    theme(
+      panel.background = element_blank(),
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank())
 }
 
 # Example usage:
@@ -242,7 +259,7 @@ ui <- dashboardPage(freshTheme = mytheme,
                          
                          
                   ),
-                  box(title = "Fish Map Location", width = 7, plotlyOutput("fishMap"))
+                  box(title = "Fish Map Location", width = 7, plotOutput("fishMap"))
 
               )
       ),
@@ -383,11 +400,7 @@ server <- function(input, output, session) {
   
   
   # Render the crop calendar
-  output$fishMap <- renderPlotly({
-    validate(
-      need(nrow(filtered_events()) > 0, "No crops match the selected criteria!")
-    )
-  })
+  output$fishMap <- renderPlot({create_fish_map(filtered_fish_prices())})
   
   # Render the crop plot
   output$cropPlot <- renderPlotly({
