@@ -51,6 +51,10 @@ map_shape <- st_polygon(list(map_ext, map_int))
 # Verify sfg class of polygon
 class(map_shape)
 
+# save shapefile
+saveRDS(map_shape, "data/map_shape.rds")
+map_shape <- readRDS("data/map_shape.rds")
+
 
 # Load the image as a raster
 img <- brick("data/stardewmap.png")  # Replace with your image file path
