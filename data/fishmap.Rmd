@@ -64,16 +64,19 @@ print(img)
 bounds <- extent(img)
 print(bounds)
 # create image map df with center map pixel size
-df <- data.frame(
+stardewmap_df <- data.frame(
   x = 612, 
   y = 371, 
   image = "data/stardewmap.png"  # Replace with your image path
 )
 
+write_csv(stardewmap_df, "data/stardewmap_df.csv")
+stardewmap_df <-read_csv("data/stardewmap_df.csv")
+
 # testing map
 ggplot() +
   geom_sf(data = map_shape) +
-  geom_image(data = df, aes(x, y, image = image), size = 1.496)
+  geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496)
 ```
 
 ```{r}
@@ -105,7 +108,7 @@ write_csv(fish_prices_sf, "data/fish_prices_sf.csv")
 # Plot the half-court with the image
 ggplot() +
   geom_sf(data = map_shape) +
-  geom_image(data = df, aes(x, y, image = image), size = 1.496) +
+  geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496) +
   geom_sf(data = fish_prices_sf, color = "red", size = 4, alpha = .1) +
   theme(
     panel.background = element_blank(),
@@ -115,5 +118,24 @@ ggplot() +
     axis.title.y = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank())
+```
+
+```{r}
+create_fish_map <- function(dataset = NULL){
+ggplot() +
+  geom_sf(data = map_shape) +
+  geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496) +
+  geom_sf(data = dataset, color = "red", size = 4, alpha = .1) +
+  theme(
+    panel.background = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank())
+  }
+
+create_fish_map(fish_prices_sf)
 ```
 
