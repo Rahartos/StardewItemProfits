@@ -185,3 +185,31 @@ animal_table <- animal_table |>
 write_csv(animal_table, "data/animal_table.csv")
 ```
 
+```{r}
+animalasso <- bow("https://stardewvalleywiki.com/Animals", force = TRUE)
+
+result <- scrape(animalasso) |>
+  html_nodes(css = "table") |>
+  html_table(header = TRUE, fill = TRUE)
+
+animal_asso <- result[[14]][2]
+
+animal_n_items <- animal_asso |>
+  clean_names() |>
+  mutate(animals_and_produce = strsplit(animals_and_produce, ") • ", fixed = TRUE)) |>
+  unnest(animals_and_produce) |>
+  filter(row_number() != 14) |>
+  mutate(animal = str_extract(animals_and_produce, "^[^(]+"),
+         product = str_extract(animals_and_produce, "\\(.*")) |>
+  dplyr::select(animal, product) |>
+  mutate(animal = str_replace(animal, " ", "_"),
+         animal = str_replace(animal, " ", ""),
+         animal = str_replace(animal, "_$", ""),
+         product = str_replace(product, "\\(", ""),
+         product = str_replace(product, "\\)", ""),
+         product = strsplit(product, " • ", fixed = TRUE)) |>
+  unnest(product)
+
+write_csv(animal_n_items, "data/animal_n_items.csv")
+```
+
