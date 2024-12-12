@@ -213,3 +213,11 @@ animal_n_items <- animal_asso |>
 write_csv(animal_n_items, "data/animal_n_items.csv")
 ```
 
+```{r}
+full_animal_table <- animal_table |>
+  left_join(animal_n_items, join_by(item == product), relationship =
+  "many-to-many")
+
+write_csv(full_animal_table, "data/full_animal_table.csv")
+```
+
