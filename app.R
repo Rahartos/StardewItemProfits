@@ -23,8 +23,13 @@ crop_prices  <- crop_prices2|>
                              general_store, 
                              ifelse(!is.na(oasis_store), oasis_price, "not listed")))
 
-#fish_prices <- readRDS("data/fish_prices_sf.rds")
 fish_prices <- read_csv("data/fish_prices.csv")
+
+animal_product_prices <- read_csv("data/animal_product_prices.csv")
+
+minerals_prices <- read_csv("data/minerals_prices.csv")
+
+
 
 #Global variables for the crop tab
 seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
@@ -32,15 +37,22 @@ crops_select <-c("potato", "potatoes", "grapes")
 crops_professon <-c("none", "tiller")
 crops_quality <- c("regular_price", "silver_price", "gold_price", "iridium_price")
 
+#global variables for minerals tab
+mineral_types <- c("foraged mineral", "gem", "geode mineral", "geode")
+mine_select <-c("gem1", "gem2", "gem3")
+mineral_professon <-c("none", "gemologist")
+
+
 #Global variables for the fish tab
 fish_locations <- c("The Beach", "River", "Night Market", 
                     "Ginger Island", "Mountain Lake","Secret Woods",
                     "Sewers", "Mutant Bug Lair", "Witch's Swamp",
                     "Crab Pot", "Mines", "Cindersap Forest Pond", "Desert")
 fish_select <-c("fishy1", "fishy2", "fishy3")
-fish_professon <-c("none", "angler")
+fish_professon <-c("none", "fisher", "angler")
 map_shape <- readRDS("data/map_shape.rds")
 stardewmap_df <-read_csv("data/stardewmap_df.csv")
+
 
 
 
@@ -95,9 +107,8 @@ create_calendar <- function(events = NULL) {
   fig
 }
 
-create_crop_barchart <-function(dataset = NULL, item_type = "crop"){
+create_crop_barchart <-function(dataset = NULL){
   
-  if(item_type == "crop"){
     plot <- dataset|>
       mutate(item = fct_reorder(item, regular_price)) |> 
       pivot_longer(cols = regular_price:iridium_price, names_to = "quality", values_to = "sell_price")|>
@@ -119,21 +130,12 @@ create_crop_barchart <-function(dataset = NULL, item_type = "crop"){
                    "iridium_price" = "purple"),
       )+
       labs(
-        title = "Grouped Bar Chart of Crop Prices",
-        x = "Crop Name",
+        title = "Grouped Bar Chart of Item Prices",
+        x = "Item Name",
         y = "Sell Price",
         fill = "Quality")+
       theme_bw() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    
-    
-  }else if(item_type == "fish"){
-    
-  }
-  
-  
-  
-  
   
   ggplotly(plot)
 }
@@ -168,16 +170,23 @@ create_fish_map <- function(dataset = NULL){
       axis.ticks.y = element_blank())
 }
 
-# Example usage:
-# Define recurring events
-#events <- data.frame(
-#  start_day = c(1, 1, 1),       # Start day of each event
-#  interval = c(3, 5, 2),        # Recurrence interval (e.g., every 3 days, every 5 days, every 7 days)
-#  plant_crops = c("Peppers", "Greenbeans", "Grapes") # Event names
-#)
+create_basic_barchart <- function(dataset = NULL){
+  plot <- dataset|>
+    mutate(item = fct_reorder(item, sell_price),
+           profession = fct_reorder(profession, sell_price) )|> 
+    ggplot(aes(x = item, y = sell_price, fill = profession)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    labs(
+      title = "Grouped Bar Chart of Item Prices",
+      x = "Item Name",
+      y = "Sell Price",
+      fill = "Profession")+
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  ggplotly(plot)
+}
 
-# Plot the calendar
-#create_calendar(events)
 
 
 #use for ui customizations
@@ -246,7 +255,7 @@ ui <- dashboardPage(freshTheme = mytheme,
                     
  
                 ),
-                box(title = "Crop Growth Data", width = 7, plotlyOutput("cropPlot")),
+                box(title = "Crop Sell Prices Plot", width = 7, plotlyOutput("cropPlot")),
                 box(title = "Crop Growth Calendar", width = 7,  plotlyOutput("cropCalendar"))
                 )
       ),
@@ -261,9 +270,19 @@ ui <- dashboardPage(freshTheme = mytheme,
       # Minerals Tab
       tabItem(tabName = "minerals",
               h2("Minerals Overview"),
-              fluidRow(
-                box(title = "Mining Efficiency", width = 6, plotOutput("mineralPlot")),
-                box(title = "Mineral Inventory", width = 6, tableOutput("mineralTable"))
+              fluidRow(column(width = 5,
+                              box(title = "Inputs",
+                                  collapsible = TRUE,
+                                  width = NULL, 
+                                  radioButtons("mine_type", "Select mineral type", mineral_types),
+                                  checkboxGroupInput("mineral", "Select minerals", mine_select)
+                              ),
+                              box(title = "Minerals Table",
+                                  collapsible = TRUE,
+                                  width = NULL, 
+                                  div(style = 'overflow-x: scroll', DT::dataTableOutput("mineTable")))
+                              ),
+                       box(title = "Mineral Sell Prices Plot", width = 7, plotlyOutput("minePlot"))
               )
       ),
       # Fish Tab
@@ -378,11 +397,54 @@ server <- function(input, output, session) {
   
   # crop table
   output$cropTable<- DT::renderDataTable({DT::datatable(filtered_prices())})
+
+  # MINERAL Outputs 
+  
+  # Default selected season
+  observe({
+    updateRadioButtons(session, "mine_type", selected = "foraged mineral")
+  })
+  
+  # Filter minerals based on sub category
+  filtered_mineral_cat <- reactive({
+    req(input$mine_type) # Ensure input$mine_type is available
+    minerals_prices |>
+      filter(sub_category == input$mine_type)
+  })
+  
+  # Dynamically update minerals selection based on category
+  observe({
+    mine_options <- filtered_mineral_cat()$item %>% unique()
+    updateCheckboxGroupInput(session, "mineral", choices = mine_options, selected = mine_options)
+  })
+  
+  # Filter events based on selected minerals
+  filtered_minerals <- reactive({
+    req(filtered_mineral_cat(), input$mineral) # Ensure dependencies are available
+    filtered_mineral_cat() |>
+      filter(item %in% input$mineral)
+  })
+  
+  # Render the mine plot
+  output$minePlot <- renderPlotly({
+    validate(
+      need(nrow(filtered_minerals()) > 0, "No items match the selected criteria!")
+    )
+    create_basic_barchart(filtered_minerals())
+  })
+  
+  # Render the mine table
+  output$mineTable <- DT::renderDataTable({
+    req(filtered_minerals()) # Ensure filtered_minerals() is available
+    DT::datatable(filtered_minerals()|>
+                    dplyr::select(-category, -sub_category))
+  })
+  
   
   
 #Fish Outputs
   updateRadioButtons(session, "f_location", selected = "River")
-  # Default selected professon
+  # Default selected profession
   updateRadioButtons(session, "f_prof", selected = "none")
   #default quality?
   updateSelectInput(session, "fish_qual", selected = "regular_price")
@@ -448,8 +510,6 @@ server <- function(input, output, session) {
   # Placeholder plots for other tabs
   output$animalPlot <- renderPlot(plot(pressure))
   output$animalTable <- renderTable(data.frame(Animal = c("Cows", "Sheep"), Count = c(50, 30)))
-  output$mineralPlot <- renderPlot(plot(airquality$Temp, airquality$Solar.R))
-  output$mineralTable <- renderTable(data.frame(Mineral = c("Gold", "Silver"), Quantity = c(20, 50)))
   output$summary <- renderText("This is where your summary will go.")
 }
 
