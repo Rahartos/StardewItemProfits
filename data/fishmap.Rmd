@@ -87,6 +87,9 @@ xy <- data.frame(
     y = c(120, 300, 100, 50, 550, 400, 260, 260, 305, 390, 610, 300, 710)
   )
 
+write_csv(xy, "data/xy.csv")
+read_csv("data/xy.csv")
+
 fish_prices_sf <- fish_prices |>
   left_join(xy) |>
   filter(!is.na(x)) |>
