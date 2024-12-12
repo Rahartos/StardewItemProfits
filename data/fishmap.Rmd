@@ -144,3 +144,50 @@ ggplot() +
 create_fish_map(fish_prices_sf)
 ```
 
+```{r}
+animal_table <- read_csv("data/animal_table.csv")
+
+
+create_profit_bar <- function(dataset = NULL){
+  dataset |>
+  mutate(quality = fct_reorder(quality, profit_increase),
+         item = fct_reorder(item, profit_increase)) |>
+  ggplot(aes(x = item, y = profit_increase, fill = quality)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(
+        values = c("Regular" = "darkgreen", 
+                   "Silver" = "grey", 
+                   "Gold" = "gold", 
+                   "Iridium" = "purple")
+      ) +
+      labs(
+        title = "Profit Increase after Proccesing Product",
+        x = "Item Name",
+        y = "Profit Increase",
+        fill = "Quality")+
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+create_sell_bar <- function(dataset = NULL){
+  dataset |>
+  mutate(quality = fct_reorder(quality, sell_price),
+         item = fct_reorder(item, sell_price)) |>
+  ggplot(aes(x = item, y = sell_price, fill = quality)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(
+        values = c("Regular" = "darkgreen", 
+                   "Silver" = "grey", 
+                   "Gold" = "gold", 
+                   "Iridium" = "purple")
+      ) +
+      labs(
+        title = "Profit Increase after Proccesing Product",
+        x = "Item Name",
+        y = "Profit Increase",
+        fill = "Quality")+
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+```
+
