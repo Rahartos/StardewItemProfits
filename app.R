@@ -18,9 +18,13 @@ library(raster)
 #load in the data
 crop_prices2 <- read_csv("data/crop_prices2.csv")
 crop_prices  <- crop_prices2|>
-  mutate(season = str_replace(sub_category, " Crop", ""))
+  mutate(season = str_replace(sub_category, " Crop", ""),
+         seed_price = ifelse(!is.na(general_store), 
+                             general_store, 
+                             ifelse(!is.na(oasis_store), oasis_price, "not listed")))
 
-fish_prices <- readRDS("data/fish_prices_sf.rds")
+#fish_prices <- readRDS("data/fish_prices_sf.rds")
+fish_prices <- read_csv("data/fish_prices.csv")
 
 #Global variables for the crop tab
 seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
@@ -91,38 +95,65 @@ create_calendar <- function(events = NULL) {
   fig
 }
 
-create_crop_barchart <-function(dataset = NULL){
-  plot <- dataset|>
-    mutate(item = fct_reorder(item, regular_price)) |> 
-    pivot_longer(cols = regular_price:iridium_price, names_to = "quality", values_to = "sell_price")|>
-    group_by(item)|>
-    arrange(sell_price)|>
-    mutate(quality = fct_reorder(quality, sell_price)) |> 
-    ggplot(aes(x = item, y = sell_price, fill = quality)) +
-    geom_bar(stat = "identity", position = "dodge") +
-    scale_fill_manual(
-      labels = c(
-        "regular_price" = "Regular",
-        "silver_price" = "Silver",
-        "gold_price" = "Gold",
-        "iridium_price" = "Iridium"
-      ),
-      values = c("regular_price" = "darkgreen", 
-                 "silver_price" = "grey", 
-                 "gold_price" = "gold", 
-                 "iridium_price" = "purple"),
-    )+
-    labs(
-      title = "Grouped Bar Chart of Item Prices",
-      x = "Item Name",
-      y = "Sell Price",
-      fill = "Quality")+
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+create_crop_barchart <-function(dataset = NULL, item_type = "crop"){
+  
+  if(item_type == "crop"){
+    plot <- dataset|>
+      mutate(item = fct_reorder(item, regular_price)) |> 
+      pivot_longer(cols = regular_price:iridium_price, names_to = "quality", values_to = "sell_price")|>
+      group_by(item)|>
+      arrange(sell_price)|>
+      mutate(quality = fct_reorder(quality, sell_price)) |> 
+      ggplot(aes(x = item, y = sell_price, fill = quality)) +
+      geom_bar(stat = "identity", position = "dodge") +
+      scale_fill_manual(
+        labels = c(
+          "regular_price" = "Regular",
+          "silver_price" = "Silver",
+          "gold_price" = "Gold",
+          "iridium_price" = "Iridium"
+        ),
+        values = c("regular_price" = "darkgreen", 
+                   "silver_price" = "grey", 
+                   "gold_price" = "gold", 
+                   "iridium_price" = "purple"),
+      )+
+      labs(
+        title = "Grouped Bar Chart of Crop Prices",
+        x = "Crop Name",
+        y = "Sell Price",
+        fill = "Quality")+
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    
+    
+  }else if(item_type == "fish"){
+    
+  }
+  
+  
+  
+  
+  
   ggplotly(plot)
 }
 
 create_fish_map <- function(dataset = NULL){
+  xy <- read_csv("data/xy.csv")
+  dataset<- dataset|>
+    left_join(xy) |>
+    filter(!is.na(x)) |>
+    mutate(x = ifelse(item == "Angler", 815, x),
+           y = ifelse(item == "Angler", 500, y),
+           x = ifelse(item == "Ms._Angler", 815, x),
+           y = ifelse(item == "Ms._Angler", 500, y),
+           x = ifelse(item == "Crimson", 805, x),
+           y = ifelse(item == "Crimson", 70, y),
+           x = ifelse(item == "Son_of_Crimsonfish", 805, x),
+           y = ifelse(item == "Son_of_Crimsonfish", 70, y),
+    ) |>  
+    st_as_sf(coords = c("x", "y"))
+    
   ggplot() +
     geom_sf(data = map_shape) +
     geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496) +
@@ -259,7 +290,8 @@ ui <- dashboardPage(freshTheme = mytheme,
                          
                          
                   ),
-                  box(title = "Fish Map Location", width = 7, plotOutput("fishMap"))
+                box(title = "Fish Map Location", width = 7, plotOutput("fishMap")),
+                box(title = "Fish Sell Prices", width = 7, plotlyOutput("fishPlot")),
 
               )
       ),
@@ -313,16 +345,16 @@ server <- function(input, output, session) {
   filtered_prices <- reactive({
     if(as.character(input$crops_qual) == "4"){
       filtered_events()|>
-        dplyr::select(item, iridium_price, growth_time )
+        dplyr::select(item, iridium_price, growth_time, seed_price )
     }else if(as.character(input$crops_qual) == "2"){
       filtered_events()|>
-        dplyr::select(item, silver_price, growth_time )
+        dplyr::select(item, silver_price, growth_time, seed_price )
     }else if(as.character(input$crops_qual) == "3"){
       filtered_events()|>
-        dplyr::select(item, gold_price, growth_time )
+        dplyr::select(item, gold_price, growth_time, seed_price )
     }else{
       filtered_events()|>
-        dplyr::select(item, regular_price, growth_time)
+        dplyr::select(item, regular_price, growth_time, seed_price)
       }
   })
   
@@ -399,18 +431,18 @@ server <- function(input, output, session) {
   
   
   
-  # Render the crop calendar
+  # Render the fish map
   output$fishMap <- renderPlot({create_fish_map(filtered_fish_prices())})
   
-  # Render the crop plot
-  output$cropPlot <- renderPlotly({
+  # Render the fish bar plot
+  output$fishPlot <- renderPlotly({
     validate(
-      need(nrow(filtered_events()) > 0, "No crops match the selected criteria!")
+      need(nrow(filtered_events()) > 0, "No fishes match the selected criteria!")
     )
-    create_crop_barchart(filtered_events())
+    create_crop_barchart(filtered_selected_fishes())
   })
   
-  # crop table
+  # fish table
   output$fishTable<- DT::renderDataTable({DT::datatable(filtered_fish_prices())})
 
   # Placeholder plots for other tabs
