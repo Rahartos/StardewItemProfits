@@ -165,7 +165,23 @@ oasis <- data.frame(
 seed_deets <- seed_deets|>
   left_join(oasis)
 
-
 write.csv(seed_deets, "seed_deets.csv")
+```
+
+```{r}
+animaltable <- bow("https://stardewvalleywiki.com/Animal_Products_Profitability", force = TRUE)
+
+result <- scrape(animaltable) |>
+  html_nodes(css = "table") |>
+  html_table(header = TRUE, fill = TRUE)
+
+animal_table <- result[[2]] 
+
+animal_table <- animal_table |>
+  clean_names() |>
+  mutate(profession = ifelse(profession == "—", "none", profession)) |>
+  filter(profession != "Treasure Appraisal Guide and  Artisan")
+
+write_csv(animal_table, "data/animal_table.csv")
 ```
 
