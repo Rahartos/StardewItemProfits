@@ -16,14 +16,7 @@ library(raster)
 
 
 # load in the data
-crop_prices2 <- read_csv("data/crop_prices2.csv")
-
-# new seed price column, if it is not sold at general store then put in the oasis price
-crop_prices  <- crop_prices2 |>
-  mutate(season = str_replace(sub_category, " Crop", ""),
-         seed_price = ifelse(general_store != 0, 
-                             general_store, 
-                             ifelse(oasis_price != 0, oasis_price, "Not Sold")))
+crop_prices2 <- read_csv("data/crop_prices3.csv")
 
 fish_prices <- read_csv("data/fish_prices.csv")
 

@@ -238,12 +238,31 @@ write_csv(full_animal_table, "data/full_animal_table.csv")
 ```
 
 ```{r}
+
+crop_prices2 <- read_csv("data/crop_prices2.csv")
+
+regrow <- as.data.frame(
+  list(item = c("Ancient Fruit", "Blueberry", "Broccoli", "Cactus Fruit", "Coffee Bean",
+             "Corn", "Cranberries", "Eggplant", "Grape", "Green Bean", "Hops", "Hot Pepper",
+             "Pineapple", "Strawberry", "Summer Squash", "Tea Leaves", "Tomato"),
+    crops_per_harvest = c(1, 3, 1, 1, 4, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)))
+
+regrow<- regrow|>
+  mutate(can_regrow = "TRUE")
+
 crop_prices2
 
-crop_prices2 |>
+crop_prices3 <- crop_prices2 |>
   mutate(season = str_replace(sub_category, " Crop", ""),
          seed_price = ifelse(general_store != 0, 
                              general_store, 
-                             ifelse(oasis_price != 0, oasis_price, "Not Sold"))) 
+                             ifelse(oasis_price != 0, oasis_price, "Not Sold"))) |>
+  left_join(regrow)|>
+  mutate(crops_per_harvest = ifelse(is.na(crops_per_harvest), 1, crops_per_harvest),
+         can_regrow = ifelse(is.na(can_regrow), FALSE, TRUE))
+
+View(crop_prices3)
+
+write_csv(crop_prices3, "data/crop_prices3.csv")
 ```
 

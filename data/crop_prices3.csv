@@ -1,0 +1,113 @@
+...1,item,regular_price,silver_price,gold_price,iridium_price,profession,category,sub_category,growth_time,general_store,jojamart,oasis_price,season,seed_price,crops_per_harvest,can_regrow
+1,Amaranth,150,187,225,300,none,crop,Fall Crop,7,70,87,0,Fall,70,1,FALSE
+2,Amaranth,165,205,247,330,tiller,crop,Fall Crop,7,70,87,0,Fall,70,1,FALSE
+3,Ancient Fruit,550,687,825,1100,none,crop,Special Crop,28,0,0,0,Special,Not Sold,1,TRUE
+4,Ancient Fruit,605,755,907,1210,tiller,crop,Special Crop,28,0,0,0,Special,Not Sold,1,TRUE
+5,Apple,100,125,150,200,none,crop,Special Crop,28,4000,0,0,Special,4000,1,FALSE
+6,Apple,110,137,165,220,tiller,crop,Special Crop,28,4000,0,0,Special,4000,1,FALSE
+7,Apricot,50,62,75,100,none,crop,Special Crop,28,2000,0,0,Special,2000,1,FALSE
+8,Apricot,55,68,82,110,tiller,crop,Special Crop,28,2000,0,0,Special,2000,1,FALSE
+9,Artichoke,160,200,240,320,none,crop,Fall Crop,8,30,0,0,Fall,30,1,FALSE
+10,Artichoke,176,220,264,352,tiller,crop,Fall Crop,8,30,0,0,Fall,30,1,FALSE
+11,Banana,150,187,225,300,none,crop,Special Crop,28,0,0,0,Special,Not Sold,1,FALSE
+12,Banana,165,205,247,330,tiller,crop,Special Crop,28,0,0,0,Special,Not Sold,1,FALSE
+13,Beet,100,125,150,200,none,crop,Fall Crop,6,0,0,20,Fall,20,1,FALSE
+14,Beet,110,137,165,220,tiller,crop,Fall Crop,6,0,0,20,Fall,20,1,FALSE
+15,Blackberry,20,25,30,40,none,crop,Special Crop,0,0,0,0,Special,Not Sold,1,FALSE
+16,Blue Jazz,50,62,75,100,none,crop,Spring Crop,7,30,37,0,Spring,30,1,FALSE
+17,Blue Jazz,55,68,82,110,tiller,crop,Spring Crop,7,30,37,0,Spring,30,1,FALSE
+18,Blueberry,50,62,75,100,none,crop,Summer Crop,13,80,0,0,Summer,80,3,TRUE
+19,Blueberry,55,68,82,110,tiller,crop,Summer Crop,13,80,0,0,Summer,80,3,TRUE
+20,Bok Choy,80,100,120,160,none,crop,Fall Crop,4,50,62,0,Fall,50,1,FALSE
+21,Bok Choy,88,110,132,176,tiller,crop,Fall Crop,4,50,62,0,Fall,50,1,FALSE
+22,Broccoli,70,87,105,140,none,crop,Fall Crop,8,0,0,0,Fall,Not Sold,1,TRUE
+23,Broccoli,77,95,115,154,tiller,crop,Fall Crop,8,0,0,0,Fall,Not Sold,1,TRUE
+24,Cactus Fruit,75,93,112,150,none,crop,Special Crop,12,0,0,150,Special,150,1,TRUE
+25,Cactus Fruit,82,102,123,165,none,crop,Special Crop,12,0,0,150,Special,150,1,TRUE
+26,Carrot,35,43,52,70,none,crop,Spring Crop,3,0,0,0,Spring,Not Sold,1,FALSE
+27,Carrot,38,47,57,77,tiller,crop,Spring Crop,3,0,0,0,Spring,Not Sold,1,FALSE
+28,Cauliflower,175,218,262,350,none,crop,Spring Crop,12,80,100,0,Spring,80,1,FALSE
+29,Cauliflower,192,239,288,385,tiller,crop,Spring Crop,12,80,100,0,Spring,80,1,FALSE
+30,Cherry,80,100,120,160,none,crop,Special Crop,28,3400,0,0,Special,3400,1,FALSE
+31,Cherry,88,110,132,176,tiller,crop,Special Crop,28,3400,0,0,Special,3400,1,FALSE
+32,Corn,50,62,75,100,none,crop,Summer Crop,14,150,187,0,Summer,150,1,TRUE
+33,Corn,50,62,75,100,none,crop,Fall Crop,14,150,187,0,Fall,150,1,TRUE
+34,Corn,55,68,82,110,tiller,crop,Summer Crop,14,150,187,0,Summer,150,1,TRUE
+35,Corn,55,68,82,110,tiller,crop,Fall Crop,14,150,187,0,Fall,150,1,TRUE
+36,Cranberries,75,93,112,150,none,crop,Fall Crop,0,0,0,0,Fall,Not Sold,2,TRUE
+37,Cranberries,82,102,123,165,tiller,crop,Fall Crop,0,0,0,0,Fall,Not Sold,2,TRUE
+38,Crystal Fruit,150,187,225,300,none,crop,Special Crop,0,0,0,0,Special,Not Sold,1,FALSE
+39,Eggplant,60,75,90,120,none,crop,Fall Crop,5,20,25,0,Fall,20,1,TRUE
+40,Eggplant,66,82,99,132,tiller,crop,Fall Crop,5,20,25,0,Fall,20,1,TRUE
+41,Fairy Rose,290,362,435,580,none,crop,Fall Crop,12,200,250,0,Fall,200,1,FALSE
+42,Fairy Rose,319,398,478,638,tiller,crop,Fall Crop,12,200,250,0,Fall,200,1,FALSE
+43,Fiddlehead Fern,90,112,135,180,none,crop,Special Crop,0,0,0,0,Special,Not Sold,1,FALSE
+44,Fiddlehead Fern,99,123,148,198,tiller,crop,Special Crop,0,0,0,0,Special,Not Sold,1,FALSE
+45,Garlic,60,75,90,120,none,crop,Spring Crop,4,40,0,0,Spring,40,1,FALSE
+46,Garlic,66,82,99,132,tiller,crop,Spring Crop,4,40,0,0,Spring,40,1,FALSE
+47,Grape,80,100,120,160,none,crop,Fall Crop,10,60,75,0,Fall,60,1,TRUE
+48,Grape,88,110,132,176,none,crop,Fall Crop,10,60,75,0,Fall,60,1,TRUE
+49,Green Bean,40,50,60,80,none,crop,Spring Crop,10,60,75,0,Spring,60,1,TRUE
+50,Green Bean,44,55,66,88,tiller,crop,Spring Crop,10,60,75,0,Spring,60,1,TRUE
+51,Hops,25,31,37,50,none,crop,Summer Crop,11,60,75,0,Summer,60,1,TRUE
+52,Hops,27,34,40,55,tiller,crop,Summer Crop,11,60,75,0,Summer,60,1,TRUE
+53,Hot Pepper,40,50,60,80,none,crop,Summer Crop,5,40,50,0,Summer,40,1,TRUE
+54,Hot Pepper,44,55,66,88,tiller,crop,Summer Crop,5,40,50,0,Summer,40,1,TRUE
+55,Kale,110,137,165,220,none,crop,Spring Crop,6,70,87,0,Spring,70,1,FALSE
+56,Kale,121,150,181,242,tiller,crop,Spring Crop,6,70,87,0,Spring,70,1,FALSE
+57,Mango,130,162,195,260,none,crop,Special Crop,28,0,0,0,Special,Not Sold,1,FALSE
+58,Mango,143,178,214,286,tiller,crop,Special Crop,28,0,0,0,Special,Not Sold,1,FALSE
+59,Melon,250,312,375,500,none,crop,Summer Crop,12,80,100,0,Summer,80,1,FALSE
+60,Melon,275,343,412,550,tiller,crop,Summer Crop,12,80,100,0,Summer,80,1,FALSE
+61,Orange,100,125,150,200,none,crop,Special Crop,28,4000,0,0,Special,4000,1,FALSE
+62,Orange,110,137,165,220,tiller,crop,Special Crop,28,4000,0,0,Special,4000,1,FALSE
+63,Parsnip,35,43,52,70,none,crop,Spring Crop,4,20,25,0,Spring,20,1,FALSE
+64,Parsnip,38,47,57,77,tiller,crop,Spring Crop,4,20,25,0,Spring,20,1,FALSE
+65,Peach,140,175,210,280,none,crop,Special Crop,28,6000,0,0,Special,6000,1,FALSE
+66,Peach,154,192,231,308,tiller,crop,Special Crop,28,6000,0,0,Special,6000,1,FALSE
+67,Pineapple,300,375,450,600,none,crop,Special Crop,14,0,0,0,Special,Not Sold,1,TRUE
+68,Pineapple,330,412,495,660,tiller,crop,Special Crop,14,0,0,0,Special,Not Sold,1,TRUE
+69,Pomegranate,140,175,210,280,none,crop,Special Crop,28,6000,0,0,Special,6000,1,FALSE
+70,Pomegranate,154,192,231,308,tiller,crop,Special Crop,28,6000,0,0,Special,6000,1,FALSE
+71,Poppy,140,175,210,280,none,crop,Summer Crop,7,100,125,0,Summer,100,1,FALSE
+72,Poppy,154,192,231,308,tiller,crop,Summer Crop,7,100,125,0,Summer,100,1,FALSE
+73,Potato,80,100,120,160,none,crop,Spring Crop,6,50,62,0,Spring,50,1,FALSE
+74,Potato,88,110,132,176,tiller,crop,Spring Crop,6,50,62,0,Spring,50,1,FALSE
+75,Powdermelon,60,75,90,120,none,crop,Winter Crop,7,0,0,0,Winter,Not Sold,1,FALSE
+76,Powdermelon,66,82,99,132,tiller,crop,Winter Crop,7,0,0,0,Winter,Not Sold,1,FALSE
+77,Pumpkin,320,400,480,640,none,crop,Fall Crop,13,100,125,0,Fall,100,1,FALSE
+78,Pumpkin,352,440,528,704,tiller,crop,Fall Crop,13,100,125,0,Fall,100,1,FALSE
+79,Radish,90,112,135,180,none,crop,Summer Crop,6,40,50,0,Summer,40,1,FALSE
+80,Radish,99,123,148,198,tiller,crop,Summer Crop,6,40,50,0,Summer,40,1,FALSE
+81,Red Cabbage,260,325,390,520,none,crop,Summer Crop,9,100,0,0,Summer,100,1,FALSE
+82,Red Cabbage,286,357,429,572,tiller,crop,Summer Crop,9,100,0,0,Summer,100,1,FALSE
+83,Rhubarb,220,275,330,440,none,crop,Spring Crop,13,0,0,100,Spring,100,1,FALSE
+84,Rhubarb,242,302,363,484,tiller,crop,Spring Crop,13,0,0,100,Spring,100,1,FALSE
+85,Spice Berry,80,100,120,160,none,crop,Special Crop,0,0,0,0,Special,Not Sold,1,FALSE
+86,Starfruit,750,937,1125,1500,none,crop,Summer Crop,13,0,0,400,Summer,400,1,FALSE
+87,Starfruit,825,1030,1237,1650,tiller,crop,Summer Crop,13,0,0,400,Summer,400,1,FALSE
+88,Strawberry,120,150,180,240,none,crop,Spring Crop,8,0,0,0,Spring,Not Sold,1,TRUE
+89,Strawberry,132,165,198,264,tiller,crop,Spring Crop,8,0,0,0,Spring,Not Sold,1,TRUE
+90,Summer Spangle,90,112,135,180,none,crop,Summer Crop,8,50,62,0,Summer,50,1,FALSE
+91,Summer Spangle,99,123,148,198,tiller,crop,Summer Crop,8,50,62,0,Summer,50,1,FALSE
+92,Summer Squash,45,56,67,90,none,crop,Summer Crop,6,0,0,0,Summer,Not Sold,1,TRUE
+93,Summer Squash,49,61,73,99,tiller,crop,Summer Crop,6,0,0,0,Summer,Not Sold,1,TRUE
+94,Sunflower,80,100,120,160,none,crop,Summer Crop,8,200,125,0,Summer,200,1,FALSE
+95,Sunflower,80,100,120,160,none,crop,Fall Crop,8,200,125,0,Fall,200,1,FALSE
+96,Sunflower,88,110,132,176,tiller,crop,Summer Crop,8,200,125,0,Summer,200,1,FALSE
+97,Sunflower,88,110,132,176,tiller,crop,Fall Crop,8,200,125,0,Fall,200,1,FALSE
+98,Taro Root,100,125,150,200,none,crop,Special Crop,10,0,0,0,Special,Not Sold,1,FALSE
+99,Taro Root,110,137,165,220,tiller,crop,Special Crop,10,0,0,0,Special,Not Sold,1,FALSE
+100,Tomato,60,75,90,120,none,crop,Summer Crop,11,50,62,0,Summer,50,1,TRUE
+101,Tomato,66,82,99,132,tiller,crop,Summer Crop,11,50,62,0,Summer,50,1,TRUE
+102,Tulip,30,37,45,60,none,crop,Spring Crop,6,20,25,0,Spring,20,1,FALSE
+103,Tulip,33,40,49,66,tiller,crop,Spring Crop,6,20,25,0,Spring,20,1,FALSE
+104,Unmilled Rice,30,37,45,60,none,crop,Spring Crop,8,40,0,0,Spring,40,1,FALSE
+105,Unmilled Rice,33,40,49,66,tiller,crop,Spring Crop,8,40,0,0,Spring,40,1,FALSE
+106,Wheat,25,31,37,50,none,crop,Summer Crop,4,10,12,0,Summer,10,1,FALSE
+107,Wheat,25,31,37,50,none,crop,Fall Crop,4,10,12,0,Fall,10,1,FALSE
+108,Wheat,27,34,40,55,tiller,crop,Summer Crop,4,10,12,0,Summer,10,1,FALSE
+109,Wheat,27,34,40,55,tiller,crop,Fall Crop,4,10,12,0,Fall,10,1,FALSE
+110,Wild Plum,80,100,120,160,none,crop,Special Crop,0,0,0,0,Special,Not Sold,1,FALSE
+111,Yam,160,200,240,320,none,crop,Fall Crop,10,60,75,0,Fall,60,1,FALSE
+112,Yam,176,220,264,352,tiller,crop,Fall Crop,10,60,75,0,Fall,60,1,FALSE
