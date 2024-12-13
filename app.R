@@ -15,8 +15,10 @@ library(raster)
 
 
 
-#load in the data
+# load in the data
 crop_prices2 <- read_csv("data/crop_prices2.csv")
+
+# new seed price column, if it is not sold at general store then put in the oasis price
 crop_prices  <- crop_prices2 |>
   mutate(season = str_replace(sub_category, " Crop", ""),
          seed_price = ifelse(general_store != 0, 
@@ -31,23 +33,23 @@ minerals_prices <- read_csv("data/minerals_prices.csv")
 
 
 
-#Global variables for the crop tab
+# global variables for the crop tab
 seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
 crops_select <-c("potato", "potatoes", "grapes")
 crops_professon <-c("none", "tiller")
 crops_quality <- c("regular_price", "silver_price", "gold_price", "iridium_price")
 
-#global variables for Animals tab
+# global variables for Animals tab
 animal_select <-c("sheepy", "eggs", "cheese")
 animal_profession <-c("none", "Rancher", "Artisan")
 
-#global variables for minerals tab
+# global variables for minerals tab
 mineral_types <- c("foraged mineral", "gem", "geode mineral", "geode")
 mine_select <-c("gem1", "gem2", "gem3")
 mineral_professon <-c("none", "gemologist")
 
 
-#Global variables for the fish tab
+# global variables for the fish tab
 fish_locations <- c("The Beach", "River", "Night Market", 
                     "Ginger Island", "Mountain Lake","Secret Woods",
                     "Sewers", "Mutant Bug Lair", "Witch's Swamp",
@@ -56,7 +58,6 @@ fish_select <-c("fishy1", "fishy2", "fishy3")
 fish_professon <-c("none", "fisher", "angler")
 map_shape <- readRDS("data/map_shape.rds")
 stardewmap_df <-read_csv("data/stardewmap_df.csv")
-
 
 
 
@@ -115,6 +116,7 @@ create_crop_barchart <-function(dataset = NULL){
   
     plot <- dataset|>
       mutate(item = fct_reorder(item, regular_price)) |> 
+      # pivoting so we can filter for quality
       pivot_longer(cols = regular_price:iridium_price, names_to = "quality", values_to = "sell_price")|>
       group_by(item)|>
       arrange(sell_price)|>
@@ -128,6 +130,7 @@ create_crop_barchart <-function(dataset = NULL){
           "gold_price" = "Gold",
           "iridium_price" = "Iridium"
         ),
+        # assigning prices to their respective colors from the game
         values = c("regular_price" = "darkgreen", 
                    "silver_price" = "grey", 
                    "gold_price" = "gold", 
@@ -140,15 +143,22 @@ create_crop_barchart <-function(dataset = NULL){
         fill = "Quality")+
       theme_bw() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  
+  # plotly for interactiveness
   ggplotly(plot)
 }
 
+# function for our map of where to find the fish
 create_fish_map <- function(dataset = NULL){
+  
+  # read in coordinates of locations in game
   xy <- read_csv("data/xy.csv")
-  dataset<- dataset|>
+  dataset <- dataset|>
+    # joining locations with our fish prices dataset
     left_join(xy) |>
+    #filtering for the legendary subcategory which is not a location
     filter(!is.na(x)) |>
+    # manually enter different coordinates of legnedary fish 
+    # since they are found at the location but not in that specific spot
     mutate(x = ifelse(item == "Angler", 815, x),
            y = ifelse(item == "Angler", 500, y),
            x = ifelse(item == "Ms._Angler", 815, x),
@@ -158,12 +168,17 @@ create_fish_map <- function(dataset = NULL){
            x = ifelse(item == "Son_of_Crimsonfish", 805, x),
            y = ifelse(item == "Son_of_Crimsonfish", 70, y),
     ) |>  
+    # make it an sf object with xy as the coord system
     st_as_sf(coords = c("x", "y"))
-    
+  
   ggplot() +
+    # using map_shape which is a polygon of the dimensions of our image
     geom_sf(data = map_shape) +
+    # layering game map on top of the polygon and sizing it to be perfect
     geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496) +
+    # layer for our points from the fish prices
     geom_sf(data = dataset, color = "red", size = 4) +
+    # removing axes, and axes ticks and lines
     theme(
       panel.background = element_blank(),
       axis.title.x = element_blank(),
@@ -174,8 +189,10 @@ create_fish_map <- function(dataset = NULL){
       axis.ticks.y = element_blank())
 }
 
+
 create_basic_barchart <- function(dataset = NULL){
   plot <- dataset|>
+    # fct reorder for ordering of bars after plotting
     mutate(item = fct_reorder(item, sell_price),
            profession = fct_reorder(profession, sell_price) )|> 
     ggplot(aes(x = item, y = sell_price, fill = profession)) +
@@ -193,11 +210,13 @@ create_basic_barchart <- function(dataset = NULL){
 
 create_profit_bar <- function(dataset = NULL){
   plot<- dataset |>
+    # fct reorder for ordering of bars after plotting
     mutate(quality = fct_reorder(quality, profit_increase),
            item = fct_reorder(item, profit_increase)) |>
     ggplot(aes(x = item, y = profit_increase, fill = quality)) +
     geom_bar(stat = "identity", position = "dodge") +
     scale_fill_manual(
+      # assigning prices to their respective colors from the game
       values = c("Regular" = "darkgreen", 
                  "Silver" = "grey", 
                  "Gold" = "gold", 
@@ -216,11 +235,13 @@ create_profit_bar <- function(dataset = NULL){
 
 create_sell_bar <- function(dataset = NULL){
   plot <- dataset |>
+    # fct reorder for ordering of bars after plotting
     mutate(quality = fct_reorder(quality, sell_price),
            item = fct_reorder(item, sell_price)) |>
     ggplot(aes(x = item, y = sell_price, fill = quality)) +
     geom_bar(stat = "identity", position = "dodge") +
     scale_fill_manual(
+      # assigning prices to their respective colors from the game
       values = c("Regular" = "darkgreen", 
                  "Silver" = "grey", 
                  "Gold" = "gold", 
@@ -260,6 +281,7 @@ ui <- dashboardPage(freshTheme = mytheme,
   dashboardHeader(title = "SV Item Profits", titleWidth = "40%"),
   dashboardSidebar(
     sidebarMenu(
+      # for all tabs 
       menuItem("About", tabName = "about", icon = icon("info-circle")),
       menuItem("Crops", tabName = "crops", icon = icon("seedling")),
       menuItem("Animals", tabName = "animals", icon = icon("paw")),
