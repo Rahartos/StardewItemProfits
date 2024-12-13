@@ -22,7 +22,7 @@ minerals_prices <- read_csv("minerals_prices.csv")
 ```
 
 ```{r}
-
+# bar chart for crops
 crop_prices2|>
   filter(sub_category == "Fall Crop")|> #This will take a input season
   mutate(item = fct_reorder(item, regular_price)) |> 
@@ -43,6 +43,7 @@ crop_prices2|>
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+# function for the bar
 create_crop_barchart <-function(dataset = NULL){
   dataset|>
   mutate(item = fct_reorder(item, regular_price)) |> 
@@ -73,9 +74,5 @@ create_crop_barchart(cp2)
 cp2|>
   filter((sub_category == "Special Crop"))
 
-
-
-
-  
 ```
 

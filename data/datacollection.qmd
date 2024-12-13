@@ -27,6 +27,22 @@ library(tidycensus)
 library(purrr)
 ```
 
+```{r}
+# # zero out everything with crop prices and create crop prices2
+# crop_prices2 <- crop_prices |>
+#   left_join(seed_deets |>
+#   select(-1)) |>
+#   select(-1) |>
+#   mutate(profession = replace_na(profession, "none"),
+#          sub_category = replace_na(sub_category, "Special Crop"),
+#          growth_time = replace_na(growth_time, 0),
+#          general_store = replace_na(general_store, 0),
+#          jojamart = replace_na(jojamart, 0),
+#          oasis_price = replace_na(oasis_price, 0)) |>
+#   filter(!item %in% c("Qi_Fruit", "Tea_Leaves"))
+# 
+# write.csv(crop_prices2, "data/crop_prices2.csv")
+```
 
 ```{r}
 seed <- bow("https://stardewvalleywiki.com/Potato_Seeds", force = TRUE)
