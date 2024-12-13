@@ -25,7 +25,7 @@ crop_prices  <- crop_prices2|>
 
 fish_prices <- read_csv("data/fish_prices.csv")
 
-animal_product_prices <- read_csv("data/animal_product_prices.csv")
+animal_product_prices <-  read_csv("data/animal_table.csv")
 
 minerals_prices <- read_csv("data/minerals_prices.csv")
 
@@ -36,6 +36,10 @@ seasons <- c("Spring", "Summer", "Fall", "Winter", "Special")
 crops_select <-c("potato", "potatoes", "grapes")
 crops_professon <-c("none", "tiller")
 crops_quality <- c("regular_price", "silver_price", "gold_price", "iridium_price")
+
+#global variables for Animals tab
+animal_select <-c("sheepy", "eggs", "cheese")
+animal_profession <-c("none", "Rancher", "Artisan")
 
 #global variables for minerals tab
 mineral_types <- c("foraged mineral", "gem", "geode mineral", "geode")
@@ -101,7 +105,7 @@ create_calendar <- function(events = NULL) {
       legend.position = "none"
     ) +
     scale_x_discrete(position = "top") +
-    labs(title = "Crop Growth Calendar", fill = "Crops")
+    labs(title = "Calendar", fill = "Crops")
   
   fig <- ggplotly(cal, tooltip = "fill")
   fig
@@ -177,13 +181,58 @@ create_basic_barchart <- function(dataset = NULL){
     ggplot(aes(x = item, y = sell_price, fill = profession)) +
     geom_bar(stat = "identity", position = "dodge") +
     labs(
-      title = "Grouped Bar Chart of Item Prices",
+      title = "Item Sell Prices By Item Quality",
       x = "Item Name",
       y = "Sell Price",
       fill = "Profession")+
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
   
+  ggplotly(plot)
+}
+
+create_profit_bar <- function(dataset = NULL){
+  plot<- dataset |>
+    mutate(quality = fct_reorder(quality, profit_increase),
+           item = fct_reorder(item, profit_increase)) |>
+    ggplot(aes(x = item, y = profit_increase, fill = quality)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    scale_fill_manual(
+      values = c("Regular" = "darkgreen", 
+                 "Silver" = "grey", 
+                 "Gold" = "gold", 
+                 "Iridium" = "purple")
+    ) +
+    labs(
+      title = "Profit Increase after Proccesing Product",
+      x = "Item Name",
+      y = "Profit Increase",
+      fill = "Quality")+
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  ggplotly(plot)
+}
+
+create_sell_bar <- function(dataset = NULL){
+  plot <- dataset |>
+    mutate(quality = fct_reorder(quality, sell_price),
+           item = fct_reorder(item, sell_price)) |>
+    ggplot(aes(x = item, y = sell_price, fill = quality)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    scale_fill_manual(
+      values = c("Regular" = "darkgreen", 
+                 "Silver" = "grey", 
+                 "Gold" = "gold", 
+                 "Iridium" = "purple")
+    ) +
+    labs(
+      title = "Profit Increase after Proccesing Product",
+      x = "Item Name",
+      y = "Profit Increase",
+      fill = "Quality")+
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
   ggplotly(plot)
 }
 
@@ -225,11 +274,32 @@ ui <- dashboardPage(freshTheme = mytheme,
     tabItems(
       # About Tab
       tabItem(tabName = "about",
-            
               img(src = "https://cdn2.steamgriddb.com/logo_thumb/681a03489989b894eee8f630ae093be6.png", height = "30%"),
               h3("Welcome to the Stardew Valley Item Profits Visualizer!"),
-              h4("This dashboard provides insights into various aspects of farming, 
-                including crops, animals, minerals, and fishing for the well loved game Stardew Valley.")
+              h4("Introduction"),
+              h5(HTML("Stardew Valley is an indie farming simulation game developed by ConcernedApe, 
+              where players inherit their grandfather's old farm in the small town of Stardew Valley. 
+              In the game, you can grow crops, raise animals, mine, fish, engage with the townspeople, 
+              and of course, make lots of money! While the game encourages players to pursue their goals at 
+              their own pace, one of the most rewarding aspects is maximizing the amount of money made at the 
+              end of each day. Whether you are cultivating crops, raising livestock, or engaging in
+              artisan production, there are multiple ways to make money in the game. 
+              Thus, this site opens the opportunity to discover: <b>what items in the game can make you the most money?</b>")),
+              h4("Data Acquisition"),
+              h5(HTML("The data was acquired from web scraping the 
+              <a href='https://stardewvalleywiki.com/Stardew_Valley_Wiki' target='_blank'>Stardew Valley Wiki</a>, 
+              with the majority of the process described 
+              <a href='https://rahartos.github.io/MiniProject2/MiniProject2Submission.html' target='_blank'>here</a>. 
+              The process for scraping the data was not easy, given that for each of the categories, 
+              (crops, animals, minerals, and fish) the pages were formatted differently with each desired value 
+              having a unique html path. For each category, multiple functions were created to scrape the necessary 
+              data using the rvest package in R. Variables scraped include: item name, sell price, and profession. 
+              Sell price was split into 4 different variables based on their quality (regular, silver, gold, and iridium quality). 
+              The variables category and subcategory were also included for each of the items. 
+              Depending on the category, additional variables were scraped, such as seed price for the crop category."
+              )),
+              h5(HTML("Feel free to explore each of the item tabs! All data used for this site can be found in this 
+                      <a href='https://github.com/Rahartos/StardewItemProfits/tree/main/data' target='_blank'>repo</a>."))
       ),
       # Crops Tab
       tabItem(tabName = "crops",
@@ -255,17 +325,62 @@ ui <- dashboardPage(freshTheme = mytheme,
                     
  
                 ),
-                box(title = "Crop Sell Prices Plot", width = 7, plotlyOutput("cropPlot")),
-                box(title = "Crop Growth Calendar", width = 7,  plotlyOutput("cropCalendar"))
+                box(title = "About",
+                    solidHeader = TRUE,
+                    collapsible = TRUE,
+                    width = 7,
+                  h5("Crops are plants that are grown from seeds to be harvested for the purpose of profit, 
+                  food, or gifting. Generally, each crop is seasonal. 
+                  It can be planted only during its designated season, 
+                     and when seasons change (after the 28th day), the crop will wither and die."),
+                  h5("There are multiple ways to examine sell prices by using the inputs.
+                  By selecting the season, you can view the crops for that season. 
+                  Although out-of-season crops can be grown in the greenhouse throughout the year, 
+                  special crops, like those that grow on trees, take an entire season 
+                  to grow to maturity. There are also other special crops that can be grown through quests. 
+                  There is also an option to select your farming profession.
+                  If you reach farming level 5, you can select the tiller profession 
+                  which increases the price that you sell your crops for.
+                  Lastly, there is an option to view only the crop you are interested in seeing, 
+                  this will change the graph, calendar and table.
+")),
+                box(title = "Crop Sell Prices", 
+                    width = 7, 
+                    plotlyOutput("cropPlot"),
+                    h5("This is a graph showing the sell prices of selected crops. 
+                       The quality of crops comes in four levels: regular, silver, gold, and iridium, 
+                       ranging from worst to best, respectively. When deciding whether to sell your crops, 
+                       give to villagers, or cook with them, use this graph to determine which crops are better 
+                       to keep or sell.")),
+                box(title = "Crop Growth Calendar", 
+                    width = 7,  
+                    plotlyOutput("cropCalendar"),
+                    h5("This plot shows what dates to plant your crops during the season base their growth time.
+                       By hovering over each date, you can see what crops to plant. 
+                       It is recommended to only select 1-4 crops at a time."))
                 )
       ),
       # Animals Tab
       tabItem(tabName = "animals",
               h2("Animals Overview"),
               fluidRow(
-                box(title = "Animal Stats", width = 6, plotOutput("animalPlot")),
-                box(title = "Livestock Inventory", width = 6, tableOutput("animalTable"))
+                  column(width = 5,
+                         box(title = "Inputs",
+                             collapsible = TRUE,
+                             width = NULL, 
+                             radioButtons("anim_prof", "Select your Farmer's Profession", animal_profession),
+                             checkboxGroupInput("animal", "Select Animal Products", animal_select)
+                         ),
+                         box(title = "Animal Products Table",
+                             collapsible = TRUE,
+                             width = NULL, 
+                             div(style = 'overflow-x: scroll', DT::dataTableOutput("animalTable")))
+     
+                  ),
+                box(title = "Animal Items Base Sell Prices", width = 7, plotlyOutput("animalPlot1")),
+                box(title = "Animal Items Max Possible Profit Percentages", width = 7, plotlyOutput("animalPlot2"))
               )
+              
       ),
       # Minerals Tab
       tabItem(tabName = "minerals",
@@ -293,8 +408,8 @@ ui <- dashboardPage(freshTheme = mytheme,
                        box(title = "Inputs",
                            collapsible = TRUE,
                            width = NULL, 
-                             radioButtons("f_location", "Select Fish Location", fish_locations),
-                             radioButtons("f_prof", "Select your Farmer's Profession", fish_professon),
+                           selectInput("f_location", "Select Fish Location", choices = fish_locations, selected = "The Beach"),
+                             radioButtons("f_prof", "Select your Fisher's Profession", fish_professon),
                              checkboxGroupInput("fish_choice", "Select Fishes", fish_select)
                          ),
                          box(title = "Fish Table",
@@ -330,10 +445,10 @@ server <- function(input, output, session) {
   #ALL THE OUTPUTS FOR THE CROPS TAB
   # Default selected season
   updateRadioButtons(session, "season", selected = "Spring")
-  # Default selected professon
+  # Default selected profession
   updateRadioButtons(session, "crop_prof", selected = "none")
   #default quality?
-  updateSelectInput(session, "crops_qual", selected = "regular_price")
+  updateSelectInput(session, "crops_qual", selected = "Regular Quality")
 
   
   # Filter crops based on selected season
@@ -441,6 +556,51 @@ server <- function(input, output, session) {
   })
   
   
+#Animal Outputs
+  # Default selected profession
+  updateRadioButtons(session, "anim_prof", selected = "none")
+  #default quality?
+  updateSelectInput(session, "anim_qual", selected = "Regular Quality")
+  
+  
+  #filter the profession based on user input
+  filtered_animal_prof <- reactive({
+    animal_product_prices |>
+      filter(profession == input$anim_prof)
+  })
+  
+  # Dynamically update animal product selection 
+  observe({
+    anim_options <- filtered_animal_prof()$item %>% unique()
+    updateCheckboxGroupInput(session, "animal", choices = anim_options, selected = anim_options)
+  })
+  
+  # Filter based on selected animals
+  filtered_animals <- reactive({
+    filtered_animal_prof() %>%
+      filter(item %in% input$animal)
+  })
+
+  
+  # Render the animal plot
+  output$animalPlot1 <- renderPlotly({
+    validate(
+      need(nrow(filtered_animals()) > 0, "No items match the selected criteria!")
+    )
+    create_sell_bar(filtered_animals())
+  })
+  
+  output$animalPlot2 <- renderPlotly({
+    validate(
+      need(nrow(filtered_animals()) > 0, "No items match the selected criteria!")
+    )
+    create_profit_bar(filtered_animals())
+  })
+  
+  # crop animal
+  output$animalTable<- DT::renderDataTable({DT::datatable(filtered_animals())})
+  
+  
   
 #Fish Outputs
   updateRadioButtons(session, "f_location", selected = "River")
@@ -492,7 +652,6 @@ server <- function(input, output, session) {
   })
   
   
-  
   # Render the fish map
   output$fishMap <- renderPlot({create_fish_map(filtered_fish_prices())})
   
@@ -507,9 +666,7 @@ server <- function(input, output, session) {
   # fish table
   output$fishTable<- DT::renderDataTable({DT::datatable(filtered_fish_prices())})
 
-  # Placeholder plots for other tabs
-  output$animalPlot <- renderPlot(plot(pressure))
-  output$animalTable <- renderTable(data.frame(Animal = c("Cows", "Sheep"), Count = c(50, 30)))
+  #text outputs
   output$summary <- renderText("This is where your summary will go.")
 }
 

@@ -24,7 +24,13 @@ h3 {
 
 h4 {
   font-family: 'Poppins', sans-serif;
-  text-align: center; /* Horizontally center the text */
+  text-align: left; /* Horizontally center the text */
+  font-size: 20px;
+}
+
+h5 {
+  font-family: 'Poppins', sans-serif;
+  text-align: left; /* Horizontally center the text */
   font-size: 14px;
 }
 
