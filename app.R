@@ -264,8 +264,8 @@ ui <- dashboardPage(freshTheme = mytheme,
       menuItem("Crops", tabName = "crops", icon = icon("seedling")),
       menuItem("Animals", tabName = "animals", icon = icon("paw")),
       menuItem("Minerals", tabName = "minerals", icon = icon("gem")),
-      menuItem("Fish", tabName = "fish", icon = icon("fish")),
-      menuItem("Conclusions", tabName = "conclusions", icon = icon("check-circle"))
+      menuItem("Fishes", tabName = "fishes", icon = icon("fish")),
+      menuItem("Conclusion", tabName = "conclusion", icon = icon("check-circle"))
     )
   ),
   
@@ -485,10 +485,10 @@ ui <- dashboardPage(freshTheme = mytheme,
               )
       ),
       # Conclusions Tab
-      tabItem(tabName = "conclusions",
-              h2("Conclusions"),
-              p("Grow things, plant things, make money."),
-              textOutput("summary")
+      tabItem(tabName = "conclusion",
+              h2("Conclusion"),
+              textOutput("summary"),
+              img(src = "StardewJobs.png", width = "100%")
       )
     )
   )
