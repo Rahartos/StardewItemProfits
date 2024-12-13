@@ -252,14 +252,26 @@ regrow<- regrow|>
 
 crop_prices2
 
+  
 crop_prices3 <- crop_prices2 |>
-  mutate(season = str_replace(sub_category, " Crop", ""),
-         seed_price = ifelse(general_store != 0, 
-                             general_store, 
-                             ifelse(oasis_price != 0, oasis_price, "Not Sold"))) |>
-  left_join(regrow)|>
-  mutate(crops_per_harvest = ifelse(is.na(crops_per_harvest), 1, crops_per_harvest),
-         can_regrow = ifelse(is.na(can_regrow), FALSE, TRUE))
+  mutate(
+    season = str_replace(sub_category, " Crop", ""),
+    seed_price = ifelse(general_store != 0, 
+                        general_store, 
+                        ifelse(oasis_price != 0, oasis_price, 0)),
+    seed_price = ifelse(item == "Strawberry", 100, seed_price)
+  ) |>
+  left_join(regrow) |>
+  mutate(
+    crops_per_harvest = ifelse(is.na(crops_per_harvest), 1, crops_per_harvest),
+    can_regrow = ifelse(is.na(can_regrow), FALSE, TRUE)
+  ) |>
+  mutate(
+    regular_gold_per_day = round(((regular_price * crops_per_harvest) - seed_price) / growth_time, 3),
+    silver_gold_per_day = round(((silver_price * crops_per_harvest) - seed_price) / growth_time, 3),
+    gold_gold_per_day = round(((gold_price * crops_per_harvest) - seed_price) / growth_time, 3),
+    iridium_gold_per_day = round(((iridium_price * crops_per_harvest) - seed_price) / growth_time, 3)
+  )
 
 View(crop_prices3)
 

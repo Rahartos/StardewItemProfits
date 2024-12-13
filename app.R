@@ -16,7 +16,7 @@ library(raster)
 
 
 # load in the data
-crop_prices2 <- read_csv("data/crop_prices3.csv")
+crop_prices <- read_csv("data/crop_prices3.csv")
 
 fish_prices <- read_csv("data/fish_prices.csv")
 
