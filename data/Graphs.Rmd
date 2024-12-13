@@ -12,6 +12,18 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readr)
 library(ggplot2)
+library(stringr)
+library(rvest)
+library(polite)
+library(sf)
+library(maps)
+library(viridis)
+library(leaflet)
+library(htmltools)
+library(ggimage)
+library(purrr)
+library(raster)
+library(leaflet)
 ```
 
 ```{r}
@@ -69,10 +81,190 @@ create_crop_barchart <-function(dataset = NULL){
 cp2 <- crop_prices2|>
   mutate(season = str_replace(sub_category, " Crop", ""))
 
+# testing function
 create_crop_barchart(cp2)
 
+# looking at special crops
 cp2|>
   filter((sub_category == "Special Crop"))
 
+```
+
+```{r}
+line_thick = 0.05
+width = 1224
+height = 742
+
+# Draw a rectangle that defines the shape of map
+map_int <- rbind(
+  c(0, 0),
+  c(0, height),
+  c(width, height),
+  c(width, 0),
+  c(0,0)
+  )
+
+# Draw a rectangle that defines the map exterior
+map_ext <- rbind(
+  c(0-line_thick, 0-line_thick),
+  c(0-line_thick, height + line_thick),
+  c(width + line_thick, height + line_thick),
+  c(width + line_thick, 0-line_thick),
+  c(0-line_thick, 0-line_thick)
+  )
+
+# Define a sfg polygon object in sf by subtracting interior from exterior
+map_shape <- st_polygon(list(map_ext, map_int))
+
+# Verify sfg class of polygon
+class(map_shape)
+
+# save shapefile as rds
+saveRDS(map_shape, "data/map_shape.rds")
+map_shape <- readRDS("data/map_shape.rds")
+
+# Load the image as a raster
+img <- brick("data/stardewmap.png") 
+
+# Inspect the image dimensions
+print(img)
+
+# Extract bounds (xmin, xmax, ymin, ymax)
+bounds <- extent(img)
+print(bounds)
+
+# create image map df with center map pixel size
+stardewmap_df <- data.frame(
+  x = 612, 
+  y = 371, 
+  image = "data/stardewmap.png"  # Replace with your image path
+)
+
+# write it in csv form 
+write_csv(stardewmap_df, "data/stardewmap_df.csv")
+stardewmap_df <-read_csv("data/stardewmap_df.csv")
+
+# testing map
+ggplot() +
+  geom_sf(data = map_shape) +
+  geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496)
+```
+
+```{r}
+# get data ready
+xy <- data.frame(
+    sub_category = c("The Beach", "River", "Night Market", "Ginger Island", "Mountain Lake", "Secret Woods", "Sewers", "Mutant Bug Lair", "Witch's Swamp", "Crab Pot", "Mines", "Cindersap Forest Pond", "Desert"),
+    x = c(850, 850, 800, 1150, 900, 200, 725, 725, 210, 400, 900, 300, 20),
+    y = c(120, 300, 100, 50, 550, 400, 260, 260, 305, 390, 610, 300, 710)
+  )
+
+# write in our x and y coordinates
+write_csv(xy, "data/xy.csv")
+read_csv("data/xy.csv")
+
+fish_prices_sf <- fish_prices |>
+  left_join(xy) |>
+  filter(!is.na(x)) |>
+  mutate(x = ifelse(item == "Angler", 815, x),
+         y = ifelse(item == "Angler", 500, y),
+         x = ifelse(item == "Ms._Angler", 815, x),
+         y = ifelse(item == "Ms._Angler", 500, y),
+         x = ifelse(item == "Crimson", 805, x),
+         y = ifelse(item == "Crimson", 70, y),
+         x = ifelse(item == "Son_of_Crimsonfish", 805, x),
+         y = ifelse(item == "Son_of_Crimsonfish", 70, y),
+         ) |>  
+  st_as_sf(coords = c("x", "y"))
+
+# save shapefile
+saveRDS(fish_prices_sf, "data/fish_prices_sf.rds")
+fish_prices_sf <- readRDS("data/fish_prices_sf.rds")
+```
+
+```{r}
+# Plot the mapshape with the image
+ggplot() +
+  geom_sf(data = map_shape) +
+  geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496) +
+  geom_sf(data = fish_prices_sf, color = "red", size = 4, alpha = .1) +
+  # theme for minialistic look, no axes or ticks
+  theme(
+    panel.background = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank())
+```
+
+```{r}
+# function to plot the map
+create_fish_map <- function(dataset = NULL){
+ggplot() +
+  geom_sf(data = map_shape) +
+  geom_image(data = stardewmap_df, aes(x, y, image = image), size = 1.496) +
+  geom_sf(data = dataset, color = "red", size = 4, alpha = .1) +
+  theme(
+    panel.background = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank())
+  }
+
+#test the function
+create_fish_map(fish_prices_sf)
+```
+
+```{r}
+# animal table
+animal_table <- read_csv("data/animal_table.csv")
+
+# function for profit increase for animal products
+create_profit_bar <- function(dataset = NULL){
+  dataset |>
+  mutate(quality = fct_reorder(quality, profit_increase),
+         item = fct_reorder(item, profit_increase)) |>
+  ggplot(aes(x = item, y = profit_increase, fill = quality)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(
+        values = c("Regular" = "darkgreen", 
+                   "Silver" = "grey", 
+                   "Gold" = "gold", 
+                   "Iridium" = "purple")
+      ) +
+      labs(
+        title = "Profit Increase after Proccesing Product",
+        x = "Item Name",
+        y = "Profit Increase",
+        fill = "Quality")+
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+# sell price bar chart
+create_sell_bar <- function(dataset = NULL){
+  dataset |>
+  mutate(quality = fct_reorder(quality, sell_price),
+         item = fct_reorder(item, sell_price)) |>
+  ggplot(aes(x = item, y = sell_price, fill = quality)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(
+        values = c("Regular" = "darkgreen", 
+                   "Silver" = "grey", 
+                   "Gold" = "gold", 
+                   "Iridium" = "purple")
+      ) +
+      labs(
+        title = "Profit Increase after Proccesing Product",
+        x = "Item Name",
+        y = "Profit Increase",
+        fill = "Quality")+
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
 ```
 
