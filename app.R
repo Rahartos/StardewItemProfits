@@ -70,7 +70,7 @@ create_calendar <- function(events = NULL) {
     event_days <- events |>
       filter(growth_time != 0)|>
       rowwise() |>
-      mutate(days = ifelse(growth_time == 28,
+      mutate(days = ifelse(growth_time == 28 |can_regrow == TRUE,
                            list(seq(from = 1, to = 1, by = 1)),
                            list(seq(from = 28, to = 1, by = -growth_time)))) |>
       unnest(cols = c(days)) |>
@@ -334,7 +334,9 @@ ui <- dashboardPage(freshTheme = mytheme,
                                                                             "Gold Quality" = 3,
                                                                             "Iridium Quality" = 4),
                                 selected = 1),
-                    div(style = 'overflow-x: scroll', DT::dataTableOutput("cropTable")))
+                    div(style = 'overflow-x: scroll', DT::dataTableOutput("cropTable")),
+                    h5("Crops where can_regrow is true only need to be planted once at the beginning of the season, 
+                       so their gold per day calculation may not accurate"))
                     
  
                 ),
@@ -549,16 +551,16 @@ server <- function(input, output, session) {
   filtered_prices <- reactive({
     if(as.character(input$crops_qual) == "4"){
       filtered_events()|>
-        dplyr::select(item, iridium_price, growth_time, seed_price )
+        dplyr::select(item, iridium_price, growth_time, seed_price, iridium_gold_per_day, can_regrow )
     }else if(as.character(input$crops_qual) == "2"){
       filtered_events()|>
-        dplyr::select(item, silver_price, growth_time, seed_price )
+        dplyr::select(item, silver_price, growth_time, seed_price, silver_gold_per_day, can_regrow )
     }else if(as.character(input$crops_qual) == "3"){
       filtered_events()|>
-        dplyr::select(item, gold_price, growth_time, seed_price )
+        dplyr::select(item, gold_price, growth_time, seed_price, gold_gold_per_day, can_regrow )
     }else{
       filtered_events()|>
-        dplyr::select(item, regular_price, growth_time, seed_price)
+        dplyr::select(item, regular_price, growth_time, seed_price, regular_gold_per_day, can_regrow)
       }
   })
   
