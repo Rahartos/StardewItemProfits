@@ -17,11 +17,11 @@ library(raster)
 
 #load in the data
 crop_prices2 <- read_csv("data/crop_prices2.csv")
-crop_prices  <- crop_prices2|>
+crop_prices  <- crop_prices2 |>
   mutate(season = str_replace(sub_category, " Crop", ""),
-         seed_price = ifelse(!is.na(general_store), 
+         seed_price = ifelse(general_store != 0, 
                              general_store, 
-                             ifelse(!is.na(oasis_store), oasis_price, "not listed")))
+                             ifelse(oasis_price != 0, oasis_price, "Not Sold")))
 
 fish_prices <- read_csv("data/fish_prices.csv")
 

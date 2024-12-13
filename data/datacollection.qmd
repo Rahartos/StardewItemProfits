@@ -221,3 +221,13 @@ full_animal_table <- animal_table |>
 write_csv(full_animal_table, "data/full_animal_table.csv")
 ```
 
+```{r}
+crop_prices2
+
+crop_prices2 |>
+  mutate(season = str_replace(sub_category, " Crop", ""),
+         seed_price = ifelse(general_store != 0, 
+                             general_store, 
+                             ifelse(oasis_price != 0, oasis_price, "Not Sold"))) 
+```
+
