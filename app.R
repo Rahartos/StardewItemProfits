@@ -204,9 +204,9 @@ create_profit_bar <- function(dataset = NULL){
                  "Iridium" = "purple")
     ) +
     labs(
-      title = "Profit Increase after Proccesing Product",
+      title = "Profit % Increase after Proccesing Product",
       x = "Item Name",
-      y = "Profit Increase",
+      y = "Profit % Increase",
       fill = "Quality")+
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -290,9 +290,7 @@ ui <- dashboardPage(freshTheme = mytheme,
               <a href='https://stardewvalleywiki.com/Stardew_Valley_Wiki' target='_blank'>Stardew Valley Wiki</a>, 
               with the majority of the process described 
               <a href='https://rahartos.github.io/MiniProject2/MiniProject2Submission.html' target='_blank'>here</a>. 
-              The process for scraping the data was not easy, given that for each of the categories, 
-              (crops, animals, minerals, and fish) the pages were formatted differently with each desired value 
-              having a unique html path. For each category, multiple functions were created to scrape the necessary 
+              For each category, multiple functions were created to scrape the necessary 
               data using the rvest package in R. Variables scraped include: item name, sell price, and profession. 
               Sell price was split into 4 different variables based on their quality (regular, silver, gold, and iridium quality). 
               The variables category and subcategory were also included for each of the items. 
@@ -377,8 +375,30 @@ ui <- dashboardPage(freshTheme = mytheme,
                              div(style = 'overflow-x: scroll', DT::dataTableOutput("animalTable")))
      
                   ),
-                box(title = "Animal Items Base Sell Prices", width = 7, plotlyOutput("animalPlot1")),
-                box(title = "Animal Items Max Possible Profit Percentages", width = 7, plotlyOutput("animalPlot2"))
+                  box(title = "About", 
+                      width = 7, 
+                      h5("Animal products can be found and collected from barn or coop animals, and are valuable 
+                         since they can be turned into processed goods using items such as a loom or a 
+                         mayonnaise machine. Sell prices can be further increased with the rancher profession 
+                         (unlocked and level 5 farming) and the artisan profession (unlocked at level 10 farming 
+                         on the tiller’s branch). The inputs give the option to indicate what profession your 
+                         farmer is at, and the animal products you are interested in seeing. The table also 
+                         gives valuable information on which animals the animal products come from, and 
+                         what the animal products turn into after processing.")),
+                  box(title = "Animal Items Base Sell Prices", 
+                      width = 7, 
+                      plotlyOutput("animalPlot1"),
+                      h5("This graph shows the sell prices of the selected animal products. 
+                      The quality of animal products comes in four levels: 
+                      regular, silver, gold, and iridium, ranging from most to least gold, respectively.")),
+                  box(title = "Animal Items Max Possible Profit Percentages", 
+                      width = 7, 
+                      plotlyOutput("animalPlot2"),
+                      h5("This graph shows how much the profit percentage increases after processing an animal product. 
+                      To maximize your profits with animal products, it is best to turn the products into processed goods,
+                      as it significantly increases your profit margins compared to selling them raw. 
+                      After an item is processed, its quality is no longer retained, so it is best to process animal 
+                      products with low quality."))
               )
               
       ),
@@ -397,11 +417,23 @@ ui <- dashboardPage(freshTheme = mytheme,
                                   width = NULL, 
                                   div(style = 'overflow-x: scroll', DT::dataTableOutput("mineTable")))
                               ),
-                       box(title = "Mineral Sell Prices Plot", width = 7, plotlyOutput("minePlot"))
+                       box(title = "About",
+                           width = 7,
+                           h5("Minerals can be found based on the 4 different categories: foraged minerals, gems, 
+                              geode minerals, and geodes. Foraged minerals are found on the ground, while gems can 
+                              be found in crates and barrels in The Mines and Skull Cavern. Geode minerals are extracted 
+                              from geodes, while geodes are found primarily by breaking rocks in The Mines. Here you 
+                              can explore the different mineral categories and which minerals sell for the most.")),
+                       box(title = "Mineral Sell Prices Plot", 
+                           width = 7, 
+                           plotlyOutput("minePlot"),
+                           h5("This bar graph arranges the minerals from least to greatest in terms of sell prices. 
+                              With the Gemologist profession (unlocked and mining level 5), sell prices for minerals are further increased.
+                              Objectively speaking, minerals tend to not sell for much, and are better used as gifts for villagers."))
               )
       ),
       # Fish Tab
-      tabItem(tabName = "fish",
+      tabItem(tabName = "fishes",
               h2("Fishing Overview"),
               fluidRow(
                 column(width = 5,
@@ -424,9 +456,32 @@ ui <- dashboardPage(freshTheme = mytheme,
                          
                          
                   ),
-                box(title = "Fish Map Location", width = 7, plotOutput("fishMap")),
-                box(title = "Fish Sell Prices", width = 7, plotlyOutput("fishPlot")),
-
+                box(title = "About",
+                    width = 7,
+                    h5("Fish can be caught in oceans, lakes, rivers, and certain underground locations. 
+                        Most fish can be caught with a fishing pole, while few require crab pots to catch 
+                        (which can be placed by bodies of water). "),
+                    h5("By selecting the location, you can view the fish you can catch in that location. 
+                       There is also the option to specify your fishing profession, between none, fisher 
+                       (unlocked at fishing skill 5), and angler (unlocked at fishing skill 10 on the 
+                       fisher profession track), as they increase the price that you sell your fish for. 
+                       Lastly, there is an option to view only the fish you are interested in seeing, 
+                       as this will change the plot and table output.")),
+                box(title = "Fish Map Location", 
+                    width = 7, 
+                    plotOutput("fishMap"),
+                    h5("Certain quests and recipes require fish, sometimes it’s difficult to remember where 
+                      these fish are located. This map makes it easier by showing the general locations of 
+                      selected fish with red dots. Simply select the location, and the fish that can be found 
+                      there will be given.")),
+                box(title = "Fish Sell Prices", 
+                    width = 7, 
+                    plotlyOutput("fishPlot"),
+                    h5("This barchart shows the prices of selected fish. The quality of fish comes in four 
+                      levels: regular, silver, gold, and iridium, ranging from worst to best, respectively. 
+                      When deciding whether to sell your fish, give to villagers, or cook with them, 
+                      use this graph to determine what will make you the most money.")
+                    ),
               )
       ),
       # Conclusions Tab
