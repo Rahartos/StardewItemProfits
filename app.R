@@ -241,7 +241,7 @@ create_sell_bar <- function(dataset = NULL){
                  "Iridium" = "purple")
     ) +
     labs(
-      title = "Profit Increase after Proccesing Product",
+      title = "Profit Increase after Processing Product",
       x = "Item Name",
       y = "Profit Increase",
       fill = "Quality")+
