@@ -1,3 +1,4 @@
+library(rsconnect)
 library(shiny)
 library(shinydashboard)
 library(shinydashboardPlus)
@@ -190,7 +191,7 @@ create_basic_barchart <- function(dataset = NULL){
     ggplot(aes(x = item, y = sell_price, fill = profession)) +
     geom_bar(stat = "identity", position = "dodge") +
     labs(
-      title = "Item Sell Prices By Item",
+      title = "Item Sell Prices By Profession",
       x = "Item Name",
       y = "Sell Price",
       fill = "Profession")+
@@ -311,7 +312,8 @@ ui <- dashboardPage(freshTheme = mytheme,
               Depending on the category, additional variables were scraped, such as seed price for the crop category."
               )),
               h5(HTML("Feel free to explore each of the item tabs! All data used for this site can be found in this 
-                      <a href='https://github.com/Rahartos/StardewItemProfits/tree/main/data' target='_blank'>repo</a>."))
+                      <a href='https://github.com/Rahartos/StardewItemProfits/tree/main/data' target='_blank'>repo</a>.")),
+              p(HTML("<i>Created by Rain Hartos and Ziling Zhen</i>"))
       ),
       # Crops Tab
       tabItem(tabName = "crops",
