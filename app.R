@@ -21,7 +21,7 @@ crop_prices <- read_csv("data/crop_prices3.csv")
 
 fish_prices <- read_csv("data/fish_prices.csv")
 
-animal_product_prices <-  read_csv("data/animal_table.csv")
+animal_product_prices <-  read_csv("data/full_animal_table.csv")
 
 minerals_prices <- read_csv("data/minerals_prices.csv")
 
