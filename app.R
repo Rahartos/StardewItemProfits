@@ -182,7 +182,6 @@ create_fish_map <- function(dataset = NULL){
       axis.ticks.y = element_blank())
 }
 
-
 create_basic_barchart <- function(dataset = NULL){
   plot <- dataset|>
     # fct reorder for ordering of bars after plotting
@@ -191,7 +190,7 @@ create_basic_barchart <- function(dataset = NULL){
     ggplot(aes(x = item, y = sell_price, fill = profession)) +
     geom_bar(stat = "identity", position = "dodge") +
     labs(
-      title = "Item Sell Prices By Item Quality",
+      title = "Item Sell Prices By Item",
       x = "Item Name",
       y = "Sell Price",
       fill = "Profession")+
@@ -216,7 +215,7 @@ create_profit_bar <- function(dataset = NULL){
                  "Iridium" = "purple")
     ) +
     labs(
-      title = "Profit % Increase after Proccesing Product",
+      title = "Profit % Increase after Processing Product",
       x = "Item Name",
       y = "Profit % Increase",
       fill = "Quality")+
@@ -504,7 +503,29 @@ ui <- dashboardPage(freshTheme = mytheme,
       # Conclusions Tab
       tabItem(tabName = "conclusion",
               h2("Conclusion"),
-              textOutput("summary"),
+              p("Stardew Valley offers players multiple ways to engage with its world, from farming and fishing to 
+                mining and raising animals. This diversity of the gameplay allows different ways to explore the best 
+                way to make money and grow your farm. By analyzing data from the most profitable categories —crops, 
+                animal products, minerals, and fish— this site serves as an accessible resource for players to plan 
+                their in-game activities and optimize their earnings."),
+              p("While the game is meant to be casually explored, there are some suggestions that can be considered 
+                based on the findings from the data collected."),
+              p("The game begins in the spring, making strawberries, cauliflowers, and rhubarb the most profitable crops 
+                to plant and sell during this season. In summer, the best choices are melons, red cabbage, and starfruit. 
+                For fall, pumpkins, yams, and artichokes are ideal. And lastly, in the winter, the only plantable crop is 
+                powdermelon. A special crop, ancient fruit, can be grown in the greenhouse and is highly valued for its high 
+                sell price."),
+              p("When it comes to animal products, the most profitable are truffles, produced by pigs, and ostrich eggs, 
+                produced by ostriches. Other animal products are better suited for cooking or gifting to villagers."),
+              p("For minerals, diamonds, prismatic shards, and star shards are among the most profitable to sell. However, 
+                it is not recommended to sell these items, as they are essential for crafting important items in the game."),
+              p("Lastly, legendary fish are the most profitable, but since they only appear twice, most players choose to collect 
+                them rather than sell them. Lava eels, however, are considered the most profitable fish to catch and sell. The river 
+                boasts the greatest variety of fish species, with 19 different types, closely followed by the beach, which features 
+                18 species."),
+              p("Ultimately, it is up to the player if they wish to strategically plan out each of their in-game days to maximize 
+                their profits or slowly explore what the game has to offer. Either way, whether you’re a seasoned farmer or just starting out, 
+                this site ensures that you can maximize your profits and thrive in the well loved game of Stardew Valley."),
               img(src = "StardewJobs.png", width = "100%")
       )
     )
@@ -738,8 +759,7 @@ server <- function(input, output, session) {
   # fish table
   output$fishTable<- DT::renderDataTable({DT::datatable(filtered_fish_prices())})
 
-  #text outputs
-  output$summary <- renderText("This is where your summary will go.")
+  
 }
 
 
